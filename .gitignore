@@ -108,3 +108,4 @@ venv.bak/
 
 #Project Specific
 sqlsorcery_local/
+files/*.csv

@@ -77,3 +77,9 @@ custom_application_fields = {
 "Sibling 3 DOB"   :                                  "Sibling_3_DOB",          
 "submission_datetime":                               "submission_date"
 }
+nan_fields = {
+    "Current_Grade": "NA",
+    "Current_School": "n/a",
+}
+
+

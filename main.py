@@ -2,8 +2,7 @@ from os import getenv
 import argparse
 import os
 import pandas as pd
-#from db import Connection
-from sqlsorcery_local import MSSQL
+from sqlsorcery import MSSQL
 from mailer import Mailer
 import logging
 import sys
@@ -29,7 +28,10 @@ def read_from_csv(CSVFilename):
 
 	#Load CSV into Pandas DF
 	df = pd.read_csv(CSVFilename,  sep=',', quotechar = '"' , doublequote = True,dtype=str,header=0)
+	#So that DataFrame matches SQL Tables
 	df.rename(columns=custom_application_fields, inplace=True)
+	#So that Nulls convert to empty string
+	df.fillna('',inplace=True)
 
 	#Ensure Data is really in the DataFrame
 	RowsImported=(len(df.index))
@@ -190,8 +192,8 @@ def main():
 
 		if eval(getenv("DEV_DB_Environment", "False")):
 			#Development Environment
-			RawTable = getenv("DBRAWTABLE", 'schoolmint_zdevpk_ApplicationData_changehistory')
-			RawIndexTable = getenv("DBRAW_INDEX_TABLE", 'schoolmint_zdevpk_ApplicationDataIndex_raw')
+			RawTable = getenv("DBRAWTABLE", 'schoolmint_zdevpk_applicationdata_changehistory')
+			RawIndexTable = getenv("DBRAW_INDEX_TABLE", 'schoolmint_zdevpk_applicationdataindex_raw')
 			raw_sproc='sproc_zdev_schoolmint_raw_preparetables'
 			index_sproc='sproc_zdev_schoolmint_rawindex_preparetables'
 		else:

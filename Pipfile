@@ -10,7 +10,7 @@ pandas = "*"
 pyodbc = "*"
 sqlalchemy = "*"
 pysftp = "*"
-#sqlsorcery = "*"
+sqlsorcery = "*"
 
 [requires]
 python_version = "3.7"

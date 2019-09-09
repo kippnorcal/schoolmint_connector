@@ -192,7 +192,7 @@ def main():
 
 		if eval(getenv("DEV_DB_Environment", "False")):
 			#Development Environment
-			RawTable = getenv("DBRAWTABLE", 'schoolmint_zdevpk_applicationdata_changehistory')
+			RawTable = getenv("DBRAWTABLE", 'schoolmint_zdevpk_ApplicationData_raw')
 			RawIndexTable = getenv("DBRAW_INDEX_TABLE", 'schoolmint_zdevpk_applicationdataindex_raw')
 			raw_sproc='sproc_zdev_schoolmint_raw_preparetables'
 			index_sproc='sproc_zdev_schoolmint_rawindex_preparetables'

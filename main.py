@@ -10,6 +10,8 @@ import traceback
 from data_config import custom_application_fields
 import downloadftp
 
+from api import API
+
 
 logging.basicConfig(
 	stream=sys.stdout,
@@ -161,6 +163,11 @@ def process_email_notifications():
 	
 	return EmailNotificationsInsertedRowCT
 
+def api_request():
+	api = API()
+	api_tokens = [getenv("API_TOKEN_DATA"),getenv("API_TOKEN_DATA_INDEX")]
+	for api_token in api_tokens:
+		api.post_demand_export(api_token=api_token)
 
 def download_files(deletelocalfiles,sourcedir,localdir,finalCSVname,deleteRemoteFile):
 	#Clean Out Destination Directory
@@ -208,6 +215,11 @@ def main():
 		#Instantiate Mailer
 		mailer = Mailer()
 
+		# Hit API
+		api_request()
+
+		# Check if files exist and wait if they don't
+
 		#Download Latest Files
 		download_files(deletelocalfiles=deletelocalfiles,sourcedir='outbound',localdir='files',finalCSVname='AutomatedApplicationData2020.csv',deleteRemoteFile=eval(getenv("DELETE_REMOTE_FILE", "True")))
 
@@ -254,7 +266,5 @@ def main():
 		stack_trace = traceback.format_exc()
 		mailer.notify(success=False, error_message=stack_trace)
 
-
 if __name__ == "__main__":
 	main()
-

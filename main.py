@@ -12,14 +12,18 @@ import downloadftp
 from api import API
 
 
+
+
 logging.basicConfig(
-	stream=sys.stdout,
+	handlers = [logging.FileHandler(filename="app.log",mode='w+'), logging.StreamHandler(sys.stdout)],
 	level=logging.INFO,
 	format="%(asctime)s | %(levelname)s: %(message)s",
 	datefmt="%Y-%m-%d %I:%M:%S%p %Z",
 )
 
-
+def read_logs(filename):
+	with open(filename) as f:
+		return f.read()
 
 def read_from_csv(CSVFilename):
 
@@ -236,15 +240,8 @@ def main():
 		# EmailsSent=send_email_notifications()
 
 		#Send Success Message
-		msg=f'''
-		{RawRowsImported} Rows Successfully Imported From Raw CSV File
-		{RawBackupRowCT} Rows Successfully Loaded into Raw Backup Table
-		{RawRowCT} Rows Successfully Loaded into Raw Table
-		{RawIndexRowsImported} Rows Successfully Imported From Raw Index CSV File
-		{RawIndexRowCT} Rows Successfully Loaded into Raw Index Table
-		{RawIndexBackupRowCT} Rows Successfully Loaded into Raw Index Backup Table
-
-		'''
+		success_message = read_logs("app.log")
+		mailer.notify(success=success_message)
 		# {ChangeTrackingInsertedRowCT} Rows Successfully Loaded into Change Log
 		# {EmailNotificationsInsertedRowCT} Rows Successfully Loaded into Email Notifications Table
 		# {EmailsSent} Emails Sent

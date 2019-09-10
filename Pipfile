@@ -9,6 +9,7 @@ verify_ssl = true
 pysftp = "*"
 sqlsorcery = "*"
 requests = "*"
+tenacity = "*"
 
 [requires]
 python_version = "3.7"

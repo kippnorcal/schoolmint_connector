@@ -7,7 +7,6 @@ from mailer import Mailer
 import logging
 import sys
 import traceback
-from data_config import custom_application_fields
 import downloadftp
 
 from api import API
@@ -30,14 +29,6 @@ def read_from_csv(CSVFilename):
 
 	#Load CSV into Pandas DF
 	df = pd.read_csv(CSVFilename,  sep=',', quotechar = '"' , doublequote = True,dtype=str,header=0)
-	#So that DataFrame matches SQL Tables
-	df.rename(columns=custom_application_fields, inplace=True)
-	df.columns = df.columns.str.replace(' - Type', '2')
-	df.columns = df.columns.str.replace(' ', '_')
-	df.columns = df.columns.str.replace('/','_')
-
-	#So that Nulls convert properly
-	df.fillna('',inplace=True)
 
 	#Ensure Data is really in the DataFrame
 	RowsImported=(len(df.index))

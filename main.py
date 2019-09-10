@@ -241,7 +241,7 @@ def main():
 
 		#Send Success Message
 		success_message = read_logs("app.log")
-		mailer.notify(success=success_message)
+		mailer.notify(results=success_message)
 		# {ChangeTrackingInsertedRowCT} Rows Successfully Loaded into Change Log
 		# {EmailNotificationsInsertedRowCT} Rows Successfully Loaded into Email Notifications Table
 		# {EmailsSent} Emails Sent

@@ -167,34 +167,40 @@ def api_request():
 	for api_token in api_tokens:
 		api.post_demand_export(api_token=api_token)
 
-def download_files(deletelocalfiles=False,sourcedir=None,localdir=None,finalCSVname=None,deleteRemoteFile=False,RemoteFileIncludeString="",RemoteFileExcludeString="RemoteFileExcludeString"):
+#Try Every 10 Seconds for 10 minutes
+@retry(wait = wait_fixed(10) , stop=stop_after_attempt(60))
+def download_files(deletelocalfiles=False,sourcedir=None,localdir=None,finalCSVname=None,DeleteRemoteFiles=False,RemoteFileIncludeString="",RemoteFileExcludeString="RemoteFileExcludeString"):
 	#Clean Out Destination Directory
 	if deletelocalfiles:
 		filelist = [ filename for filename in os.listdir(localdir) ]
 		for filename in filelist:
-			if RemoteFileIncludeString in filename and not RemoteFileExcludeString in filename:
+			if RemoteFileIncludeString in filename:
 				os.remove(os.path.join(localdir, filename))
+
 
 	#DownloadNewFiles
 	downloading = downloadftp.Connection()
 	downloading.download_dir(sourcedir,localdir)
 	
 	#Rename Latest Downloaded File Index File
-	for filename in (sorted(os.listdir(localdir))):
+	dst=""
+	filelist =  sorted(os.listdir(localdir), key = lambda x: os.path.getctime(localdir + '/' + x))   
+	for filename in filelist:
 	 	if RemoteFileIncludeString in filename and not RemoteFileExcludeString in filename:
 	 		src =localdir + '/' + filename 
 	 		dst =localdir + '/' +  finalCSVname
 	 		os.rename(src, dst) 
 
+	if os.path.exists(dst):
+		logging.info(f'{dst} Successfully Downloaded')
+	else:
+		logging.info(f"Error: '{localdir}/{finalCSVname}' Was Not Successfully Downloaded")
+		raise Exception(f"Error: '{localdir}/{finalCSVname}' Was Not Successfully Downloaded")
+
 	#Delete Files From Remote Server When Done Downloading
-	if deleteRemoteFile:
+	if DeleteRemoteFiles:
 	 	downloading.delete_files_remotedir(sourcedir)
 
-#@retry( wait = wait_fixed(2) + wait_random_exponential(multiplier=1, max=60) , stop=stop_after_attempt(7))
-@retry
-def try_retry():
-	print (datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S %Z"))
-	raise TryAgain
 
 
 def main():
@@ -204,7 +210,7 @@ def main():
 
 		#eval is used here to convert value from string to boolean
 		deletelocalfiles= eval(getenv("DELETELOCALFILES", "True"))
-		deleteremotefiles=eval(getenv("DELETE_REMOTE_FILE", "True"))
+		DeleteRemoteFiles=eval(getenv("DELETE_REMOTE_FILES", "True"))
 
 		if eval(getenv("DEV_DB_Environment", "False")):
 			#Development Environment
@@ -222,13 +228,13 @@ def main():
 		mailer = Mailer()
 
 		# Hit API
-		#api_request()
+		api_request()
 
 		# Check if files exist and wait if they don't
 
 		#Download Latest Files
 
-		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationData2020.csv',deleteRemoteFile=deleteremotefiles,RemoteFileIncludeString="Data",RemoteFileExcludeString="Index")
+		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationData2020.csv',DeleteRemoteFiles=False,RemoteFileIncludeString="Data",RemoteFileExcludeString="Index")
 
 		#Load Data Frame from Downloaded CSV
 		RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')
@@ -236,7 +242,7 @@ def main():
 		#Load Database from DataFrame
 		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RawTable,raw_sproc)
 
-		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationDataIndex2020.csv',deleteRemoteFile=deleteremotefiles,RemoteFileIncludeString="Data Index")
+		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationDataIndex2020.csv',DeleteRemoteFiles=DeleteRemoteFiles,RemoteFileIncludeString="Data Index")
 	
 		#Load Data Frame from Downloaded CSV
 		RawIndexRowsImported, df= read_from_csv('files/AutomatedApplicationDataIndex2020.csv')

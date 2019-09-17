@@ -168,8 +168,8 @@ def api_request():
 		api.post_demand_export(api_token=api_token)
 
 #Try Every 10 Seconds for 10 minutes
-@retry(wait = wait_fixed(10) , stop=stop_after_attempt(60))
-def download_files(deletelocalfiles=False,sourcedir=None,localdir=None,finalCSVname=None,DeleteRemoteFiles=False,RemoteFileIncludeString="",RemoteFileExcludeString="RemoteFileExcludeString"):
+@retry(wait = wait_fixed(30) , stop=stop_after_attempt(60))
+def download_files(deletelocalfiles=False,sourcedir=None,localdir=None,finalCSVname=None,DeleteRemoteFiles=False,RemoteFileIncludeString=""):
 	#Clean Out Destination Directory
 	if deletelocalfiles:
 		filelist = [ filename for filename in os.listdir(localdir) ]
@@ -186,7 +186,7 @@ def download_files(deletelocalfiles=False,sourcedir=None,localdir=None,finalCSVn
 	dst=""
 	filelist =  sorted(os.listdir(localdir), key = lambda x: os.path.getctime(localdir + '/' + x))   
 	for filename in filelist:
-	 	if RemoteFileIncludeString in filename and not RemoteFileExcludeString in filename:
+	 	if RemoteFileIncludeString in filename:
 	 		src =localdir + '/' + filename 
 	 		dst =localdir + '/' +  finalCSVname
 	 		os.rename(src, dst) 
@@ -194,7 +194,6 @@ def download_files(deletelocalfiles=False,sourcedir=None,localdir=None,finalCSVn
 	if os.path.exists(dst):
 		logging.info(f'{dst} Successfully Downloaded')
 	else:
-		logging.info(f"Error: '{localdir}/{finalCSVname}' Was Not Successfully Downloaded")
 		raise Exception(f"Error: '{localdir}/{finalCSVname}' Was Not Successfully Downloaded")
 
 	#Delete Files From Remote Server When Done Downloading
@@ -234,7 +233,7 @@ def main():
 
 		#Download Latest Files
 
-		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationData2020.csv',DeleteRemoteFiles=False,RemoteFileIncludeString="Data",RemoteFileExcludeString="Index")
+		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationData2020.csv',DeleteRemoteFiles=False,RemoteFileIncludeString="Data Raw")
 
 		#Load Data Frame from Downloaded CSV
 		RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')

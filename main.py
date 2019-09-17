@@ -167,7 +167,7 @@ def api_request():
 	for api_token in api_tokens:
 		api.post_demand_export(api_token=api_token)
 
-#Try Every 10 Seconds for 10 minutes
+#Try Every 30 Seconds for 30 minutes
 @retry(wait = wait_fixed(30) , stop=stop_after_attempt(60))
 def download_files(deletelocalfiles=False,sourcedir=None,localdir=None,finalCSVname=None,DeleteRemoteFiles=False,RemoteFileIncludeString=""):
 	#Clean Out Destination Directory

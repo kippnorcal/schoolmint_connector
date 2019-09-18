@@ -90,10 +90,12 @@ def insert_into_table(df,Schema,Table,prepare_sproc):
 
 def process_change_tracking():
 	##Generate Change History
-	conn = Connection()
+	conn = MSSQL()
+	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
+	Enrollment_Period=getenv("Enrollment_Period", '2021')
 	if eval(getenv("DEV_DB_Environment", "False")):
 		#Development Environment
-		sproc='sproc_zdev_Paycom_Create_ChangeTracking_Entries'
+		sproc=f"sproc_zdevpk_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
 	else:
 		sproc='sproc_Paycom_Create_ChangeTracking_Entries'
 
@@ -238,6 +240,9 @@ def main():
 		#Load Data Frame from Downloaded CSV
 		RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')
 
+		#Add SchoolYear4Digit to DataFrame
+		df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
+
 		#Load Database from DataFrame
 		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RawTable,raw_sproc)
 
@@ -246,27 +251,18 @@ def main():
 		#Load Data Frame from Downloaded CSV
 		RawIndexRowsImported, df= read_from_csv('files/AutomatedApplicationDataIndex2020.csv')
 
+		#Add SchoolYear4Digit to DataFrame
+		df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
+
 		#Load Database from DataFrame
 		RawIndexBackupRowCT, RawIndexRowCT= insert_into_table(df, Schema,RawIndexTable,index_sproc)
 
 		#Create Change Tracking Rows
-		# ChangeTrackingInsertedRowCT=process_change_tracking()
-
-		# #Create Email Notifications Rows
-		# EmailNotificationsInsertedRowCT=process_email_notifications()
-
-		# #Send Email Notifications
-		# EmailsSent=send_email_notifications()
+		ChangeTrackingInsertedRowCT=process_change_tracking()
 
 		#Send Success Message
 		success_message = read_logs("app.log")
 		mailer.notify(results=success_message)
-		# {ChangeTrackingInsertedRowCT} Rows Successfully Loaded into Change Log
-		# {EmailNotificationsInsertedRowCT} Rows Successfully Loaded into Email Notifications Table
-		# {EmailsSent} Emails Sent
-		# '''
-		# mailer.notify(results=msg)
-
 
 	except Exception as e:
 		logging.exception(e)

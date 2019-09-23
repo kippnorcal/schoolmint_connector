@@ -107,61 +107,21 @@ def process_change_tracking():
 	#RowCT=conn.query(sql)
 
 
-def send_email_notifications():
-	conn = Connection()
+def process_FactDailyStatus():
+	##Generate Change History
+	conn = MSSQL()
 	if eval(getenv("DEV_DB_Environment", "False")):
 		#Development Environment
-		view='custom.vw_Paycom_EmailNotifications_GetUnsent_dev'	
+		sproc="sproc_zdevpk_SchoolMint_Create_FactDailyStatus"
 	else:
-		view='custom.vw_Paycom_EmailNotifications_GetUnsent'
-		
-	result=conn.query(f'select * from {view}')  ##View  
-	result.fillna("", inplace = True) 
-	EmailsSent=0
-	for index,row in result.iterrows():
-		Email_To=getenv("TEST_EMAIL_ADDRESS", row['Email_To'])
-		Email_CC=getenv("TEST_CC_ADDRESS", row['Email_CC'])
-		Email_BCC=getenv("TEST_BCC_ADDRESS",'')
-		EmailSubject_EventDate=row['EmailSubject_EventDate']
-		EmailSubject=f"{row['EmailBody_EventType']} - {row['Employee_Name']} ({row['EmailSubject_EventDate']} Change ID = {row['ChangeID']})"
-		msg=f'''Employee Change Event: {row['EmailBody_EventType']}
-Change Date in Paycom: {row['ChangeTracking_Date']}
+		sproc='#sproc_Paycom_Create_ChangeTracking_Entries'
 
-Actions Required: {row['EmailBody_Actions']}
- 
-{row['EmailBody_Details_PlainText']}
-'''
-		mailer = Mailer()
-		mailer.send_mail( "EmployeeUpdates KIPP Bay Area <techprovisioning@kippbayarea.org>", msg, Email_CC, Email_BCC , Email_To, EmailSubject)
-		if eval(getenv("DEV_DB_Environment", "False")):
-			#Development Environment
-			sproc='sproc_Paycom_zdev_EmailNotifications_MarkSent'			
-		else:
-			sproc='sproc_Paycom_EmailNotifications_MarkSent'
-
-		result=conn.exec_sproc(f"{sproc} @ChangeID={row['ChangeID']}")
-		EmailsSent += 1
-
-	logging.info(f'{EmailsSent} Emails Sent')
-	return EmailsSent
-
-
-
-
-def process_email_notifications():
-	##Generate Email Notifications Rows
-	conn = Connection()
-	if eval(getenv("DEV_DB_Environment", "False")):
-		#Development Environment
-		sproc='sproc_zdev_Paycom_EmailNotifications_Populate'			
-	else:
-		sproc='sproc_Paycom_EmailNotifications_Populate'
-
-	result=conn.exec_sproc(sproc)
-	EmailNotificationsInsertedRowCT=result.fetchone()[0]
-	logging.info(f'{EmailNotificationsInsertedRowCT} Rows Successfully Loaded into Email Notifications')
+	result=conn.exec_sproc(sproc)	
+	FactDailyStatusInsertedRowCT=result.fetchone()[0]
+	logging.info(f'{FactDailyStatusInsertedRowCT} Rows Successfully Loaded into FactDailyStatus')
 	
-	return EmailNotificationsInsertedRowCT
+	return FactDailyStatusInsertedRowCT
+
 
 def api_request():
 	api = API()
@@ -259,6 +219,9 @@ def main():
 
 		#Create Change Tracking Rows
 		ChangeTrackingInsertedRowCT=process_change_tracking()
+
+		#Create FactDailyStatus Rows
+		ChangeFactDailyStatusInsertedRowCT=process_FactDailyStatus()
 
 		#Send Success Message
 		success_message = read_logs("app.log")

@@ -97,7 +97,7 @@ def process_change_tracking():
 		#Development Environment
 		sproc=f"sproc_zdevpk_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
 	else:
-		sproc='sproc_Paycom_Create_ChangeTracking_Entries'
+		sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
 
 	result=conn.exec_sproc(sproc)	
 	ChangeTrackingInsertedRowCT=result.fetchone()[0]
@@ -114,7 +114,7 @@ def process_FactDailyStatus():
 		#Development Environment
 		sproc="sproc_zdevpk_SchoolMint_Create_FactDailyStatus"
 	else:
-		sproc='#sproc_Paycom_Create_ChangeTracking_Entries'
+		sproc='sproc_SchoolMint_Create_FactDailyStatus'
 
 	result=conn.exec_sproc(sproc)	
 	FactDailyStatusInsertedRowCT=result.fetchone()[0]
@@ -175,13 +175,15 @@ def main():
 
 		if eval(getenv("DEV_DB_Environment", "False")):
 			#Development Environment
-			RawTable = getenv("DBRAWTABLE", 'schoolmint_zdevpk_ApplicationData_raw')
-			RawIndexTable = getenv("DBRAW_INDEX_TABLE", 'schoolmint_zdevpk_applicationdataindex_raw')
+			RawTable = getenv("DBRAWTABLE_DEV", 'schoolmint_zdevpk_ApplicationData_raw')
+			RawIndexTable = getenv("DBRAW_INDEX_TABLE_DEV", 'schoolmint_zdevpk_applicationdataindex_raw')
 			raw_sproc='sproc_zdev_schoolmint_raw_preparetables'
 			index_sproc='sproc_zdev_schoolmint_rawindex_preparetables'
 		else:
-			raw_sproc='Prod Sproc'
-			index_sproc='Prod Sproc'
+			RawTable = getenv("DBRAWTABLE", 'schoolmint_ApplicationData_raw')
+			RawIndexTable = getenv("DBRAW_INDEX_TABLE", 'schoolmint_applicationdataindex_raw')
+			raw_sproc='sproc_SchoolMint_Raw_PrepareTables'
+			index_sproc='sproc_SchoolMint_RawIndex_PrepareTable'
 
 
 

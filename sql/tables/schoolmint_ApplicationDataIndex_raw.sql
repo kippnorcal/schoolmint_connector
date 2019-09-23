@@ -2,11 +2,12 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+
 CREATE TABLE [custom].[schoolmint_ApplicationDataIndex_raw](
 	[applicant_id] [varchar](500) NULL,
 	[account_id] [varchar](500) NULL,
 	[student_id] [varchar](500) NULL,
-	[applicantion_id] [varchar](500) NULL,
+	[application_id] [varchar](500) NULL,
 	[first_name] [varchar](500) NULL,
 	[middle_name] [varchar](500) NULL,
 	[last_name] [varchar](500) NULL,
@@ -17,7 +18,7 @@ CREATE TABLE [custom].[schoolmint_ApplicationDataIndex_raw](
 	[guardian_last_name] [varchar](500) NULL,
 	[phone_number] [varchar](500) NULL,
 	[home_phone_number] [varchar](500) NULL,
-	[stree1] [varchar](500) NULL,
+	[street1] [varchar](500) NULL,
 	[street2] [varchar](500) NULL,
 	[zipcode] [varchar](500) NULL,
 	[state] [varchar](500) NULL,

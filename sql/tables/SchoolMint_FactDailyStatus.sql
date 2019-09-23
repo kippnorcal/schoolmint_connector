@@ -3,7 +3,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [custom].[SchoolMint_FactDailyStatus](
-	[ID] [int] NOT NULL,
+	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[School] [varchar](500) NULL,
 	[SchoolID] [varchar](50) NULL,
 	[SchoolYear4DigitEnd] [varchar](4) NULL,
@@ -15,3 +15,5 @@ CREATE TABLE [custom].[SchoolMint_FactDailyStatus](
 	[Sunday_Boolean]  AS (case when datepart(weekday,[ReportDate])=(1) then (1) else (0) end)
 ) ON [PRIMARY]
 GO
+
+

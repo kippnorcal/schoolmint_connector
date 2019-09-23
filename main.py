@@ -183,7 +183,7 @@ def main():
 			RawTable = getenv("DBRAWTABLE", 'schoolmint_ApplicationData_raw')
 			RawIndexTable = getenv("DBRAW_INDEX_TABLE", 'schoolmint_applicationdataindex_raw')
 			raw_sproc='sproc_SchoolMint_Raw_PrepareTables'
-			index_sproc='sproc_SchoolMint_RawIndex_PrepareTable'
+			index_sproc='sproc_SchoolMint_RawIndex_PrepareTables'
 
 
 

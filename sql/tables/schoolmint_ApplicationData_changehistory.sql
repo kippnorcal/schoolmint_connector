@@ -28,5 +28,5 @@ CREATE TABLE [custom].[schoolmint_ApplicationData_changehistory](
 	[SchoolYear4Digit] [int] NULL
 ) ON [PRIMARY]
 GO
-ALTER TABLE [custom].[schoolmint_ApplicationData_changehistory] ADD  CONSTRAINT [DF_schoolmint_ApplicationData_changehistory_ChangeTrackingDate]  DEFAULT (getdate()-(1)) FOR [ChangeTrackingDate]
+ALTER TABLE [custom].[schoolmint_ApplicationData_changehistory] ADD  CONSTRAINT [DF_schoolmint_ApplicationData_changehistory_ChangeTrackingDate]  DEFAULT (getdate()) FOR [ChangeTrackingDate]
 GO

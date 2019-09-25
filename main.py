@@ -110,11 +110,12 @@ def process_change_tracking():
 def process_FactDailyStatus():
 	##Generate Change History
 	conn = MSSQL()
+	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
 	if eval(getenv("DEV_DB_Environment", "False")):
 		#Development Environment
-		sproc="sproc_zdevpk_SchoolMint_Create_FactDailyStatus"
+		sproc=f"sproc_zdevpk_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
 	else:
-		sproc='sproc_SchoolMint_Create_FactDailyStatus'
+		sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
 
 	result=conn.exec_sproc(sproc)	
 	FactDailyStatusInsertedRowCT=result.fetchone()[0]

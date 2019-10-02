@@ -9,14 +9,14 @@ import traceback
 
 import pandas as pd
 from sqlsorcery import MSSQL
-from tenacity import *
+import tenacity
 
 from api import API
 import downloadftp
 from mailer import Mailer
 
-
-
+RAWTABLE = getenv("DB_RAW_TABLE", 'schoolmint_ApplicationData_raw')
+RAWINDEXTABLE = getenv("DB_RAW_INDEX_TABLE", 'schoolmint_ApplicationDataIndex_raw')
 
 
 logging.basicConfig(
@@ -25,6 +25,7 @@ logging.basicConfig(
 	format="%(asctime)s | %(levelname)s: %(message)s",
 	datefmt="%Y-%m-%d %I:%M:%S%p %Z",
 )
+
 
 def read_logs(filename):
 	with open(filename) as f:
@@ -95,11 +96,7 @@ def process_change_tracking():
 	conn = MSSQL()
 	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
 	Enrollment_Period=getenv("Enrollment_Period", '2021')
-	if eval(getenv("DEV_DB_Environment", "False")):
-		#Development Environment
-		sproc=f"sproc_zdevpk_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
-	else:
-		sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
+	sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
 
 	result=conn.exec_sproc(sproc)	
 	ChangeTrackingInsertedRowCT=result.fetchone()[0]
@@ -113,11 +110,7 @@ def process_FactDailyStatus():
 	##Generate Change History
 	conn = MSSQL()
 	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
-	if eval(getenv("DEV_DB_Environment", "False")):
-		#Development Environment
-		sproc=f"sproc_zdevpk_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
-	else:
-		sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
+	sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
 
 	result=conn.exec_sproc(sproc)	
 	FactDailyStatusInsertedRowCT=result.fetchone()[0]
@@ -176,17 +169,8 @@ def main():
 		deletelocalfiles= eval(getenv("DELETELOCALFILES", "True"))
 		DeleteRemoteFiles=eval(getenv("DELETE_REMOTE_FILES", "True"))
 
-		if eval(getenv("DEV_DB_Environment", "False")):
-			#Development Environment
-			RawTable = getenv("DBRAWTABLE_DEV", 'schoolmint_zdevpk_ApplicationData_raw')
-			RawIndexTable = getenv("DBRAW_INDEX_TABLE_DEV", 'schoolmint_zdevpk_applicationdataindex_raw')
-			raw_sproc='sproc_zdev_schoolmint_raw_preparetables'
-			index_sproc='sproc_zdev_schoolmint_rawindex_preparetables'
-		else:
-			RawTable = getenv("DBRAWTABLE", 'schoolmint_ApplicationData_raw')
-			RawIndexTable = getenv("DBRAW_INDEX_TABLE", 'schoolmint_applicationdataindex_raw')
-			raw_sproc='sproc_SchoolMint_Raw_PrepareTables'
-			index_sproc='sproc_SchoolMint_RawIndex_PrepareTables'
+		raw_sproc='sproc_SchoolMint_Raw_PrepareTables'
+		index_sproc='sproc_SchoolMint_RawIndex_PrepareTables'
 
 
 
@@ -209,7 +193,7 @@ def main():
 		df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
 
 		#Load Database from DataFrame
-		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RawTable,raw_sproc)
+		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RAWTABLE,raw_sproc)
 
 		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationDataIndex2020.csv',DeleteRemoteFiles=DeleteRemoteFiles,RemoteFileIncludeString="Data Index")
 	
@@ -220,7 +204,7 @@ def main():
 		df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
 
 		#Load Database from DataFrame
-		RawIndexBackupRowCT, RawIndexRowCT= insert_into_table(df, Schema,RawIndexTable,index_sproc)
+		RawIndexBackupRowCT, RawIndexRowCT= insert_into_table(df, Schema,RAWINDEXTABLE,index_sproc)
 
 		#Create Change Tracking Rows
 		ChangeTrackingInsertedRowCT=process_change_tracking()

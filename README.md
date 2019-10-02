@@ -19,6 +19,14 @@ git clone https://github.com/kipp-bayarea/schoolmint_connector.git
 
 ### Create .env file
 ```
+DB_SERVER=
+DB=
+DB_USER=
+DB_PWD=
+
+DB_RAW_TABLE=
+DB_RAW_INDEX_TABLE=
+
 API_DOMAIN=xxxxx.schoolmint.net
 API_ACCOUNT_EMAIL=
 API_TOKEN_DATA=

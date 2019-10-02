@@ -16,6 +16,7 @@ import downloadftp
 from mailer import Mailer
 
 LOCALDIR = 'files'
+SOURCEDIR = 'schoolmint'
 RAWTABLE = getenv("DB_RAW_TABLE", 'schoolmint_ApplicationData_raw')
 RAWINDEXTABLE = getenv("DB_RAW_INDEX_TABLE", 'schoolmint_ApplicationDataIndex_raw')
 
@@ -136,10 +137,10 @@ def delete_data_files(directory):
 
 #Try Every 30 Seconds for 30 minutes
 @retry(wait = wait_fixed(30) , stop=stop_after_attempt(60))
-def download_files(sourcedir=None,finalCSVname=None,RemoteFileIncludeString=""):
+def download_files(finalCSVname=None,RemoteFileIncludeString=""):
 	#DownloadNewFiles
 	downloading = downloadftp.Connection()
-	downloading.download_dir(sourcedir,LOCALDIR)
+	downloading.download_dir(SOURCEDIR,LOCALDIR)
 	
 	#Rename Latest Downloaded File Index File
 	dst=""
@@ -171,7 +172,7 @@ def main():
 		if eval(getenv("DELETE_LOCAL_FILES", "True")):
 			delete_data_files(LOCALDIR)
 
-		download_files(sourcedir='schoolmint',finalCSVname='AutomatedApplicationData2020.csv',RemoteFileIncludeString="Data Raw")
+		download_files(finalCSVname='AutomatedApplicationData2020.csv',RemoteFileIncludeString="Data Raw")
 
 		#Load Data Frame from Downloaded CSV
 		RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')
@@ -182,7 +183,7 @@ def main():
 		#Load Database from DataFrame
 		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RAWTABLE,raw_sproc)
 
-		download_files(sourcedir='schoolmint',finalCSVname='AutomatedApplicationDataIndex2020.csv',RemoteFileIncludeString="Data Index")
+		download_files(finalCSVname='AutomatedApplicationDataIndex2020.csv',RemoteFileIncludeString="Data Index")
 	
 		#Load Data Frame from Downloaded CSV
 		RawIndexRowsImported, df= read_from_csv('files/AutomatedApplicationDataIndex2020.csv')

@@ -166,41 +166,24 @@ def main():
 
 		mailer = Mailer()
 
-		# Hit API
 		api_request()
 
 		if eval(getenv("DELETE_LOCAL_FILES", "True")):
 			delete_data_files(LOCALDIR)
 
 		download_files(finalCSVname='AutomatedApplicationData2020.csv',RemoteFileIncludeString="Data Raw")
-
-		#Load Data Frame from Downloaded CSV
 		RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')
-
-		#Add SchoolYear4Digit to DataFrame
 		df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
-
-		#Load Database from DataFrame
 		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RAWTABLE,raw_sproc)
 
 		download_files(finalCSVname='AutomatedApplicationDataIndex2020.csv',RemoteFileIncludeString="Data Index")
-	
-		#Load Data Frame from Downloaded CSV
 		RawIndexRowsImported, df= read_from_csv('files/AutomatedApplicationDataIndex2020.csv')
-
-		#Add SchoolYear4Digit to DataFrame
 		df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
-
-		#Load Database from DataFrame
 		RawIndexBackupRowCT, RawIndexRowCT= insert_into_table(df, Schema,RAWINDEXTABLE,index_sproc)
 
-		#Create Change Tracking Rows
 		ChangeTrackingInsertedRowCT=process_change_tracking()
-
-		#Create FactDailyStatus Rows
 		ChangeFactDailyStatusInsertedRowCT=process_FactDailyStatus()
 
-		#Send Success Message
 		success_message = read_logs("app.log")
 		mailer.notify(results=success_message)
 

@@ -1,18 +1,20 @@
-from os import getenv
 import argparse
+import datetime 
+import logging
 import os
+from os import getenv
+import sys
+import time
+import traceback
+
 import pandas as pd
 from sqlsorcery import MSSQL
-from mailer import Mailer
-import logging
-import sys
-import traceback
-import downloadftp
 from tenacity import *
-import datetime 
-import time
 
 from api import API
+import downloadftp
+from mailer import Mailer
+
 
 
 

@@ -9,12 +9,13 @@ import traceback
 
 import pandas as pd
 from sqlsorcery import MSSQL
-import tenacity
+from tenacity import *
 
 from api import API
 import downloadftp
 from mailer import Mailer
 
+LOCALDIR = 'files'
 RAWTABLE = getenv("DB_RAW_TABLE", 'schoolmint_ApplicationData_raw')
 RAWINDEXTABLE = getenv("DB_RAW_INDEX_TABLE", 'schoolmint_ApplicationDataIndex_raw')
 
@@ -125,17 +126,17 @@ def api_request():
 	for api_token in api_tokens:
 		api.post_demand_export(api_token=api_token)
 
+
+def delete_data_files(directory):
+	filelist = [ filename for filename in os.listdir(directory) ]
+	for filename in filelist:
+		if 'Data' in filename:
+			os.remove(os.path.join(directory, filename))
+
+
 #Try Every 30 Seconds for 30 minutes
 @retry(wait = wait_fixed(30) , stop=stop_after_attempt(60))
-def download_files(deletelocalfiles=False,sourcedir=None,localdir=None,finalCSVname=None,RemoteFileIncludeString=""):
-	#Clean Out Destination Directory
-	if deletelocalfiles:
-		filelist = [ filename for filename in os.listdir(localdir) ]
-		for filename in filelist:
-			if RemoteFileIncludeString in filename:
-				os.remove(os.path.join(localdir, filename))
-
-
+def download_files(sourcedir=None,localdir=None,finalCSVname=None,RemoteFileIncludeString=""):
 	#DownloadNewFiles
 	downloading = downloadftp.Connection()
 	downloading.download_dir(sourcedir,localdir)
@@ -157,28 +158,20 @@ def download_files(deletelocalfiles=False,sourcedir=None,localdir=None,finalCSVn
 
 def main():
 	try:
-		#Set Up ENV Variables
 		Schema = getenv("DBSCHEMA", 'custom')
-
-		#eval is used here to convert value from string to boolean
-		deletelocalfiles= eval(getenv("DELETELOCALFILES", "True"))
 
 		raw_sproc='sproc_SchoolMint_Raw_PrepareTables'
 		index_sproc='sproc_SchoolMint_RawIndex_PrepareTables'
 
-
-
-		#Instantiate Mailer
 		mailer = Mailer()
 
 		# Hit API
 		api_request()
 
-		# Check if files exist and wait if they don't
+		if eval(getenv("DELETE_LOCAL_FILES", "True")):
+			delete_data_files(LOCALDIR)
 
-		#Download Latest Files
-
-		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationData2020.csv',RemoteFileIncludeString="Data Raw")
+		download_files(sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationData2020.csv',RemoteFileIncludeString="Data Raw")
 
 		#Load Data Frame from Downloaded CSV
 		RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')
@@ -189,7 +182,7 @@ def main():
 		#Load Database from DataFrame
 		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RAWTABLE,raw_sproc)
 
-		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationDataIndex2020.csv',RemoteFileIncludeString="Data Index")
+		download_files(sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationDataIndex2020.csv',RemoteFileIncludeString="Data Index")
 	
 		#Load Data Frame from Downloaded CSV
 		RawIndexRowsImported, df= read_from_csv('files/AutomatedApplicationDataIndex2020.csv')

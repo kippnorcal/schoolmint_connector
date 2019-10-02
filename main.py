@@ -12,7 +12,7 @@ from sqlsorcery import MSSQL
 from tenacity import *
 
 from api import API
-import downloadftp
+import ftp
 from mailer import Mailer
 
 LOCALDIR = 'files'
@@ -139,8 +139,8 @@ def delete_data_files(directory):
 @retry(wait = wait_fixed(30) , stop=stop_after_attempt(60))
 def download_files(finalCSVname=None,RemoteFileIncludeString=""):
 	#DownloadNewFiles
-	downloading = downloadftp.Connection()
-	downloading.download_dir(SOURCEDIR,LOCALDIR)
+	conn = ftp.Connection()
+	conn.download_dir(SOURCEDIR,LOCALDIR)
 	
 	#Rename Latest Downloaded File Index File
 	dst=""
@@ -172,17 +172,17 @@ def main():
 			delete_data_files(LOCALDIR)
 
 		download_files(finalCSVname='AutomatedApplicationData2020.csv',RemoteFileIncludeString="Data Raw")
-		RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')
-		df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
-		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RAWTABLE,raw_sproc)
+		# RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')
+		# df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
+		# RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RAWTABLE,raw_sproc)
 
 		download_files(finalCSVname='AutomatedApplicationDataIndex2020.csv',RemoteFileIncludeString="Data Index")
-		RawIndexRowsImported, df= read_from_csv('files/AutomatedApplicationDataIndex2020.csv')
-		df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
-		RawIndexBackupRowCT, RawIndexRowCT= insert_into_table(df, Schema,RAWINDEXTABLE,index_sproc)
+		# RawIndexRowsImported, df= read_from_csv('files/AutomatedApplicationDataIndex2020.csv')
+		# df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
+		# RawIndexBackupRowCT, RawIndexRowCT= insert_into_table(df, Schema,RAWINDEXTABLE,index_sproc)
 
-		ChangeTrackingInsertedRowCT=process_change_tracking()
-		ChangeFactDailyStatusInsertedRowCT=process_FactDailyStatus()
+		# ChangeTrackingInsertedRowCT=process_change_tracking()
+		# ChangeFactDailyStatusInsertedRowCT=process_FactDailyStatus()
 
 		success_message = read_logs("app.log")
 		mailer.notify(results=success_message)

@@ -136,24 +136,24 @@ def delete_data_files(directory):
 
 #Try Every 30 Seconds for 30 minutes
 @retry(wait = wait_fixed(30) , stop=stop_after_attempt(60))
-def download_files(sourcedir=None,localdir=None,finalCSVname=None,RemoteFileIncludeString=""):
+def download_files(sourcedir=None,finalCSVname=None,RemoteFileIncludeString=""):
 	#DownloadNewFiles
 	downloading = downloadftp.Connection()
-	downloading.download_dir(sourcedir,localdir)
+	downloading.download_dir(sourcedir,LOCALDIR)
 	
 	#Rename Latest Downloaded File Index File
 	dst=""
-	filelist =  sorted(os.listdir(localdir), key = lambda x: os.path.getctime(localdir + '/' + x))   
+	filelist =  sorted(os.listdir(LOCALDIR), key = lambda x: os.path.getctime(LOCALDIR + '/' + x))   
 	for filename in filelist:
 	 	if RemoteFileIncludeString in filename:
-	 		src =localdir + '/' + filename 
-	 		dst =localdir + '/' +  finalCSVname
+	 		src =LOCALDIR + '/' + filename 
+	 		dst =LOCALDIR + '/' +  finalCSVname
 	 		os.rename(src, dst) 
 
 	if os.path.exists(dst):
 		logging.info(f'{dst} Successfully Downloaded')
 	else:
-		raise Exception(f"Error: '{localdir}/{finalCSVname}' Was Not Successfully Downloaded")
+		raise Exception(f"Error: '{LOCALDIR}/{finalCSVname}' Was Not Successfully Downloaded")
 
 
 def main():
@@ -171,7 +171,7 @@ def main():
 		if eval(getenv("DELETE_LOCAL_FILES", "True")):
 			delete_data_files(LOCALDIR)
 
-		download_files(sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationData2020.csv',RemoteFileIncludeString="Data Raw")
+		download_files(sourcedir='schoolmint',finalCSVname='AutomatedApplicationData2020.csv',RemoteFileIncludeString="Data Raw")
 
 		#Load Data Frame from Downloaded CSV
 		RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')
@@ -182,7 +182,7 @@ def main():
 		#Load Database from DataFrame
 		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RAWTABLE,raw_sproc)
 
-		download_files(sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationDataIndex2020.csv',RemoteFileIncludeString="Data Index")
+		download_files(sourcedir='schoolmint',finalCSVname='AutomatedApplicationDataIndex2020.csv',RemoteFileIncludeString="Data Index")
 	
 		#Load Data Frame from Downloaded CSV
 		RawIndexRowsImported, df= read_from_csv('files/AutomatedApplicationDataIndex2020.csv')

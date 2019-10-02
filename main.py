@@ -135,26 +135,26 @@ def delete_data_files(directory):
 			os.remove(os.path.join(directory, filename))
 
 
-#Try Every 30 Seconds for 30 minutes
-@retry(wait = wait_fixed(30) , stop=stop_after_attempt(60))
-def download_files(finalCSVname=None,RemoteFileIncludeString=""):
-	#DownloadNewFiles
-	conn = ftp.Connection()
-	conn.download_dir(SOURCEDIR,LOCALDIR)
-	
-	#Rename Latest Downloaded File Index File
-	dst=""
-	filelist =  sorted(os.listdir(LOCALDIR), key = lambda x: os.path.getctime(LOCALDIR + '/' + x))   
+def rename_file(finalCSVname=None, stringmatch=""):
+	dst = ""
+	filelist = sorted(os.listdir(LOCALDIR), key=lambda x: os.path.getctime(LOCALDIR + '/' + x))   
 	for filename in filelist:
-	 	if RemoteFileIncludeString in filename:
-	 		src =LOCALDIR + '/' + filename 
-	 		dst =LOCALDIR + '/' +  finalCSVname
-	 		os.rename(src, dst) 
-
+	 	if stringmatch in filename:
+	 		src = f'{LOCALDIR}/{filename}'
+	 		dst = f'{LOCALDIR}/{finalCSVname}'
+	 		os.rename(src, dst)
 	if os.path.exists(dst):
-		logging.info(f'{dst} Successfully Downloaded')
+		logging.info(f"'{dst}' Successfully Downloaded")
 	else:
 		raise Exception(f"Error: '{LOCALDIR}/{finalCSVname}' Was Not Successfully Downloaded")
+
+
+#Try Every 30 Seconds for 30 minutes
+@retry(wait=wait_fixed(30), stop=stop_after_attempt(60))
+def download_from_ftp():
+	# TODO: all files are getting downloaded to local since we aren't deleting remote files
+	conn = ftp.Connection()
+	conn.download_dir(SOURCEDIR,LOCALDIR)
 
 
 def main():
@@ -171,12 +171,13 @@ def main():
 		if eval(getenv("DELETE_LOCAL_FILES", "True")):
 			delete_data_files(LOCALDIR)
 
-		download_files(finalCSVname='AutomatedApplicationData2020.csv',RemoteFileIncludeString="Data Raw")
+		download_from_ftp()
+		rename_file(finalCSVname='AutomatedApplicationData2020.csv',stringmatch="Data Raw")
+		rename_file(finalCSVname='AutomatedApplicationDataIndex2020.csv',stringmatch="Data Index")
 		# RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')
 		# df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
 		# RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RAWTABLE,raw_sproc)
 
-		download_files(finalCSVname='AutomatedApplicationDataIndex2020.csv',RemoteFileIncludeString="Data Index")
 		# RawIndexRowsImported, df= read_from_csv('files/AutomatedApplicationDataIndex2020.csv')
 		# df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
 		# RawIndexBackupRowCT, RawIndexRowCT= insert_into_table(df, Schema,RAWINDEXTABLE,index_sproc)

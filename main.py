@@ -46,7 +46,7 @@ def read_from_csv(CSVFilename):
 		
 	return RowsImported,df
 
-def insert_into_table(df,Schema,Table,prepare_sproc):
+def insert_into_table(df,Schema,Table,prepare_sproc,post_process_sproc):
 	
 
 	conn = MSSQL()
@@ -83,7 +83,10 @@ def insert_into_table(df,Schema,Table,prepare_sproc):
 
 
 	else:
-		raise Exception('Error Loading Data. Table Was Not Truncated.')		
+		raise Exception('Error Loading Data. Table Was Not Truncated.')	
+
+	if post_process_sproc:
+		conn.exec_sproc(post_process_sproc)
 
 	return BackupRowCT,RowCT
 
@@ -91,11 +94,9 @@ def insert_into_table(df,Schema,Table,prepare_sproc):
 def process_change_tracking():
 	##Generate Change History
 	conn = MSSQL()
-	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
-	Enrollment_Period=getenv("Enrollment_Period", '2021')
 	if eval(getenv("DEV_DB_Environment", "False")):
 		#Development Environment
-		sproc=f"sproc_zdevpk_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
+		sproc=f"sproc_zdevpk_SchoolMint_Create_ChangeTracking_Entries"
 	else:
 		sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
 
@@ -110,10 +111,9 @@ def process_change_tracking():
 def process_FactDailyStatus():
 	##Generate Change History
 	conn = MSSQL()
-	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
 	if eval(getenv("DEV_DB_Environment", "False")):
 		#Development Environment
-		sproc=f"sproc_zdevpk_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
+		sproc=f"sproc_zdevpk_SchoolMint_Create_FactDailyStatus"
 	else:
 		sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
 
@@ -180,12 +180,16 @@ def main():
 			RawIndexTable = getenv("DBRAW_INDEX_TABLE_DEV", 'schoolmint_zdevpk_applicationdataindex_raw')
 			raw_sproc='sproc_zdev_schoolmint_raw_preparetables'
 			index_sproc='sproc_zdev_schoolmint_rawindex_preparetables'
+			post_process_sproc='sproc_zdev_SchoolMint_UpdateSchoolYear'
+			raw_post_process_sproc='sproc_zdev_SchoolMint_Raw_UpdateSchoolYear'
+			index_post_process_sproc='sproc_zdev_SchoolMint_Index_UpdateSchoolYear'
 		else:
 			RawTable = getenv("DBRAWTABLE", 'schoolmint_ApplicationData_raw')
 			RawIndexTable = getenv("DBRAW_INDEX_TABLE", 'schoolmint_applicationdataindex_raw')
 			raw_sproc='sproc_SchoolMint_Raw_PrepareTables'
 			index_sproc='sproc_SchoolMint_RawIndex_PrepareTables'
-
+			raw_post_process_sproc='sproc_SchoolMint_Raw_UpdateSchoolYear'
+			index_post_process_sproc='sproc_SchoolMint_Index_UpdateSchoolYear'
 
 
 		#Instantiate Mailer
@@ -203,22 +207,16 @@ def main():
 		#Load Data Frame from Downloaded CSV
 		RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')
 
-		#Add SchoolYear4Digit to DataFrame
-		df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
-
 		#Load Database from DataFrame
-		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RawTable,raw_sproc)
+		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RawTable,raw_sproc,raw_post_process_sproc)
 
 		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationDataIndex2020.csv',DeleteRemoteFiles=DeleteRemoteFiles,RemoteFileIncludeString="Data Index")
 	
 		#Load Data Frame from Downloaded CSV
 		RawIndexRowsImported, df= read_from_csv('files/AutomatedApplicationDataIndex2020.csv')
 
-		#Add SchoolYear4Digit to DataFrame
-		df['SchoolYear4Digit'] = getenv("SchoolYear4Digit", '2021')
-
 		#Load Database from DataFrame
-		RawIndexBackupRowCT, RawIndexRowCT= insert_into_table(df, Schema,RawIndexTable,index_sproc)
+		RawIndexBackupRowCT, RawIndexRowCT= insert_into_table(df, Schema,RawIndexTable,index_sproc,index_post_process_sproc)
 
 		#Create Change Tracking Rows
 		ChangeTrackingInsertedRowCT=process_change_tracking()

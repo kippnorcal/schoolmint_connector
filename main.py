@@ -146,6 +146,26 @@ def rename_file(finalCSVname=None, stringmatch=""):
 	return dst
 
 
+def process_application_data(conn, schema):
+	""" Take application data from csv and insert into table """
+	dst = rename_file(finalCSVname='AutomatedApplicationData2020.csv',stringmatch="Data Raw")
+	df = read_csv_to_df(dst)
+	if backup_and_truncate_table(conn, getenv("SPROC_RAW_PREP")):
+		table = getenv("DB_RAW_TABLE")
+		conn.insert_into(table, df)
+		check_table_load(conn, schema, table)
+
+
+def process_application_data_index(conn, schema):
+	""" Take application data index from csv and insert into table """
+	dst = rename_file(finalCSVname='AutomatedApplicationDataIndex2020.csv',stringmatch="Data Index")
+	df = read_csv_to_df(dst)
+	if backup_and_truncate_table(conn, getenv("SPROC_RAW_INDEX_PREP")):
+		table = getenv("DB_RAW_INDEX_TABLE")
+		conn.insert_into(table, df)
+		check_table_load(conn, schema, table)
+
+
 def main():
 	try:
 		schema = getenv("DBSCHEMA")
@@ -158,27 +178,12 @@ def main():
 			delete_data_files(LOCALDIR)
 		download_from_ftp()
 
-		# process Application Data file
-		dst = rename_file(finalCSVname='AutomatedApplicationData2020.csv',stringmatch="Data Raw")
-		df = read_csv_to_df(dst)
-		if backup_and_truncate_table(conn, getenv("SPROC_RAW_PREP")):
-			table = getenv("DB_RAW_TABLE")
-			conn.insert_into(table, df)
-			check_table_load(conn, schema, table)
+		process_application_data(conn, schema)
+		process_application_data_index(conn, schema)
 
-		# process Application Data Index file
-		dst = rename_file(finalCSVname='AutomatedApplicationDataIndex2020.csv',stringmatch="Data Index")
-		df = read_csv_to_df(dst)
-		if backup_and_truncate_table(conn, getenv("SPROC_RAW_INDEX_PREP")):
-			table = getenv("DB_RAW_INDEX_TABLE")
-			conn.insert_into(table, df)
-			check_table_load(conn, schema, table)
+		# process_change_tracking(conn)
+		# process_FactDailyStatus(conn)
 
-		# execute sprocs
-		process_change_tracking(conn)
-		process_FactDailyStatus(conn)
-
-		# notification
 		success_message = read_logs("app.log")
 		mailer.notify(results=success_message)
 	except Exception as e:

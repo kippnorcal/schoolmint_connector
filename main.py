@@ -115,7 +115,7 @@ def process_FactDailyStatus():
 		#Development Environment
 		sproc=f"sproc_zdevpk_SchoolMint_Create_FactDailyStatus"
 	else:
-		sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
+		sproc=f"sproc_SchoolMint_Create_FactDailyStatus"
 
 	result=conn.exec_sproc(sproc)	
 	FactDailyStatusInsertedRowCT=result.fetchone()[0]

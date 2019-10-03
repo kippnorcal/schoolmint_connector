@@ -81,7 +81,8 @@ def process_change_tracking(conn):
 	""" Generate Change History """
 	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
 	Enrollment_Period=getenv("Enrollment_Period", '2021')
-	sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
+	# sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
+	sproc = getenv("SPROC_CHANGE_TRACK")
 
 	result=conn.exec_sproc(sproc)	
 	ChangeTrackingInsertedRowCT=result.fetchone()[0]
@@ -91,7 +92,8 @@ def process_change_tracking(conn):
 def process_FactDailyStatus(conn):
 	""" Generate Fact Daily Status """
 	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
-	sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
+	# sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
+	sproc = getenv("SPROC_FACT_DAILY")
 
 	result=conn.exec_sproc(sproc)	
 	FactDailyStatusInsertedRowCT=result.fetchone()[0]
@@ -181,7 +183,7 @@ def main():
 		process_application_data(conn, schema)
 		process_application_data_index(conn, schema)
 
-		# process_change_tracking(conn)
+		process_change_tracking(conn)
 		# process_FactDailyStatus(conn)
 
 		success_message = read_logs("app.log")

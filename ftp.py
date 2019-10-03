@@ -15,4 +15,4 @@ class Connection:
 
     def download_dir(self,sourcedir,destinationdir):
         self.sourcedir = sourcedir
-        result=self.ftpsrv.get_d(self.sourcedir, destinationdir, preserve_mtime=True)
+        self.ftpsrv.get_d(self.sourcedir, destinationdir, preserve_mtime=True)

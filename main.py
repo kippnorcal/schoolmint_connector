@@ -77,9 +77,8 @@ def check_table_load(conn, Schema, Table):
 		logging.info(f'{RowCT} Rows Successfully Loaded into Table {Table}')	
 
 
-def process_change_tracking():
-	##Generate Change History
-	conn = MSSQL()
+def process_change_tracking(conn):
+	""" Generate Change History """
 	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
 	Enrollment_Period=getenv("Enrollment_Period", '2021')
 	sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
@@ -87,22 +86,16 @@ def process_change_tracking():
 	result=conn.exec_sproc(sproc)	
 	ChangeTrackingInsertedRowCT=result.fetchone()[0]
 	logging.info(f'{ChangeTrackingInsertedRowCT} Rows Successfully Loaded into Change Log')
-	
-	return ChangeTrackingInsertedRowCT
-	#RowCT=conn.query(sql)
 
 
-def process_FactDailyStatus():
-	##Generate Change History
-	conn = MSSQL()
+def process_FactDailyStatus(conn):
+	""" Generate Fact Daily Status """
 	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
 	sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
 
 	result=conn.exec_sproc(sproc)	
 	FactDailyStatusInsertedRowCT=result.fetchone()[0]
 	logging.info(f'{FactDailyStatusInsertedRowCT} Rows Successfully Loaded into FactDailyStatus')
-	
-	return FactDailyStatusInsertedRowCT
 
 
 def api_request():
@@ -182,8 +175,8 @@ def main():
 			check_table_load(conn, schema, table)
 
 		# execute sprocs
-		# ChangeTrackingInsertedRowCT=process_change_tracking()
-		# ChangeFactDailyStatusInsertedRowCT=process_FactDailyStatus()
+		process_change_tracking(conn)
+		process_FactDailyStatus(conn)
 
 		# notification
 		success_message = read_logs("app.log")

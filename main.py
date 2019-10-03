@@ -3,7 +3,6 @@ from datetime import datetime
 import glob
 import logging
 import os
-from os import getenv
 import sys
 import time
 import traceback
@@ -79,10 +78,10 @@ def check_table_load(conn, Schema, Table):
 
 def process_change_tracking(conn):
 	""" Generate Change History """
-	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
-	Enrollment_Period=getenv("Enrollment_Period", '2021')
+	SchoolYear4Digit=os.getenv("SchoolYear4Digit", '2021')
+	Enrollment_Period=os.getenv("Enrollment_Period", '2021')
 	# sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
-	sproc = getenv("SPROC_CHANGE_TRACK")
+	sproc = os.getenv("SPROC_CHANGE_TRACK")
 
 	result=conn.exec_sproc(sproc)	
 	ChangeTrackingInsertedRowCT=result.fetchone()[0]
@@ -91,9 +90,9 @@ def process_change_tracking(conn):
 
 def process_FactDailyStatus(conn):
 	""" Generate Fact Daily Status """
-	SchoolYear4Digit=getenv("SchoolYear4Digit", '2021')
+	SchoolYear4Digit=os.getenv("SchoolYear4Digit", '2021')
 	# sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
-	sproc = getenv("SPROC_FACT_DAILY")
+	sproc = os.getenv("SPROC_FACT_DAILY")
 
 	result=conn.exec_sproc(sproc)	
 	FactDailyStatusInsertedRowCT=result.fetchone()[0]
@@ -102,7 +101,7 @@ def process_FactDailyStatus(conn):
 
 def api_request():
 	api = API()
-	api_tokens = [getenv("API_TOKEN_DATA"),getenv("API_TOKEN_DATA_INDEX")]
+	api_tokens = [os.getenv("API_TOKEN_DATA"),os.getenv("API_TOKEN_DATA_INDEX")]
 	for api_token in api_tokens:
 		api.post_demand_export(api_token=api_token)
 
@@ -120,7 +119,7 @@ def check_todays_file_exists(filename):
 	if len(glob.glob(expected_filename))==0:
 		raise Exception(f"Error: '{filename}' was not downloaded.")
 	else:
-		logging.info(f"'{expected_filename}' successfully downloaded")
+		logging.info(f"'{filename}' successfully downloaded")
 
 
 #Try Every 30 Seconds for 30 minutes
@@ -152,8 +151,8 @@ def process_application_data(conn, schema):
 	""" Take application data from csv and insert into table """
 	dst = rename_file(finalCSVname='AutomatedApplicationData2020.csv',stringmatch="Data Raw")
 	df = read_csv_to_df(dst)
-	if backup_and_truncate_table(conn, getenv("SPROC_RAW_PREP")):
-		table = getenv("DB_RAW_TABLE")
+	if backup_and_truncate_table(conn, os.getenv("SPROC_RAW_PREP")):
+		table = os.getenv("DB_RAW_TABLE")
 		conn.insert_into(table, df)
 		check_table_load(conn, schema, table)
 
@@ -162,28 +161,28 @@ def process_application_data_index(conn, schema):
 	""" Take application data index from csv and insert into table """
 	dst = rename_file(finalCSVname='AutomatedApplicationDataIndex2020.csv',stringmatch="Data Index")
 	df = read_csv_to_df(dst)
-	if backup_and_truncate_table(conn, getenv("SPROC_RAW_INDEX_PREP")):
-		table = getenv("DB_RAW_INDEX_TABLE")
+	if backup_and_truncate_table(conn, os.getenv("SPROC_RAW_INDEX_PREP")):
+		table = os.getenv("DB_RAW_INDEX_TABLE")
 		conn.insert_into(table, df)
 		check_table_load(conn, schema, table)
 
 
 def main():
 	try:
-		schema = getenv("DBSCHEMA")
-		conn = MSSQL(schema=schema)
+		schema = os.getenv("DB_SCHEMA")
+		conn = MSSQL()
 		mailer = Mailer()
 
 		# get files
 		api_request()
-		if eval(getenv("DELETE_LOCAL_FILES", "True")):
+		if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
 			delete_data_files(LOCALDIR)
 		download_from_ftp()
 
 		process_application_data(conn, schema)
 		process_application_data_index(conn, schema)
 
-		process_change_tracking(conn)
+		# process_change_tracking(conn)
 		# process_FactDailyStatus(conn)
 
 		success_message = read_logs("app.log")

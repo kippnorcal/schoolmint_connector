@@ -85,9 +85,6 @@ def insert_into_table(df,Schema,Table,prepare_sproc,post_process_sproc):
 	else:
 		raise Exception('Error Loading Data. Table Was Not Truncated.')	
 
-	if post_process_sproc:
-		conn.exec_sproc(post_process_sproc)
-
 	return BackupRowCT,RowCT
 
 

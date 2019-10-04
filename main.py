@@ -113,13 +113,6 @@ def process_FactDailyStatus(conn):
     )
 
 
-def api_request():
-    api = API()
-    api_tokens = [os.getenv("API_TOKEN_DATA"), os.getenv("API_TOKEN_DATA_INDEX")]
-    for api_token in api_tokens:
-        api.post_demand_export(api_token=api_token)
-
-
 def delete_data_files(directory):
     files = [file for file in os.listdir(directory)]
     for file in files:
@@ -194,13 +187,13 @@ def main():
         mailer = Mailer()
 
         # get files
-        api_request()
-        if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
-            delete_data_files(LOCALDIR)
-        download_from_ftp()
+        API().request_reports()
+        # if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
+        #     delete_data_files(LOCALDIR)
+        # download_from_ftp()
 
-        process_application_data(conn, schema)
-        process_application_data_index(conn, schema)
+        # process_application_data(conn, schema)
+        # process_application_data_index(conn, schema)
 
         # process_change_tracking(conn)
         # process_FactDailyStatus(conn)

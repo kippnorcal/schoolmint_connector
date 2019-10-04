@@ -1,5 +1,5 @@
 import argparse
-from datetime import datetime
+import datetime as dt
 import glob
 import logging
 import os
@@ -95,20 +95,29 @@ def check_table_load(conn, schema, table):
 
 def delete_data_files(directory):
     """ Delete data files (not everything) from the given directory """
-    files = [file for file in os.listdir(directory)]
-    for file in files:
+    for file in os.listdir(directory):
         if "Data" in file:
             os.remove(os.path.join(directory, file))
 
 
-def check_todays_file_exists(filename):
-    """ Check if today's file is in the local directory based on creation date """
-    date = datetime.now().strftime("%m%d%y")
-    expected_filename = f"{LOCALDIR}/{filename}*{date}*.csv"
-    if len(glob.glob(expected_filename)) == 0:
-        raise Exception(f"Error: '{filename}' was not downloaded.")
-    else:
-        logging.info(f"'{filename}' successfully downloaded.")
+def get_todays_file(filename):
+    """ Get the file that was modified within the last 30 min that matches the given name """
+    files = sorted(
+        os.listdir(LOCALDIR),
+        key=lambda x: os.path.getmtime(LOCALDIR + "/" + x),
+        reverse=True,
+    )
+    now = dt.datetime.now()
+    ago = now - dt.timedelta(minutes=30)
+    for file in files:
+        if filename in file:
+            status = os.stat(f"{LOCALDIR}/{file}")
+            mtime = dt.datetime.fromtimestamp(status.st_mtime)
+            if mtime > ago:
+                logging.info(f"'{filename}' successfully downloaded.")
+                return file
+            else:
+                raise Exception(f"Error: '{filename}' was not downloaded.")
 
 
 @retry(wait=wait_fixed(30), stop=stop_after_attempt(60))
@@ -122,21 +131,16 @@ def download_from_ftp():
     # TODO: all files are getting downloaded to local since we aren't deleting remote files
     conn = ftp.Connection()
     conn.download_dir(SOURCEDIR, LOCALDIR)
-    check_todays_file_exists("Automated Application Data Raw")
-    check_todays_file_exists("Automated Application Data Index")
+    app_file = get_todays_file("Automated Application Data Raw")
+    app_index_file = get_todays_file("Automated Application Data Index")
+    return app_file, app_index_file
 
 
-def rename_file(new_name=None, string_match=""):
-    """ Rename the file if the name matches the given string """
-    new_path = ""
-    files = sorted(
-        os.listdir(LOCALDIR), key=lambda x: os.path.getctime(LOCALDIR + "/" + x)
-    )
-    for file in files:
-        if string_match in file:
-            old_path = f"{LOCALDIR}/{file}"
-            new_path = f"{LOCALDIR}/{new_name}"
-            os.rename(old_path, new_path)
+def rename_file(old_name=None, new_name=None):
+    """ Rename the file with the given name """
+    old_path = f"{LOCALDIR}/{old_name}"
+    new_path = f"{LOCALDIR}/{new_name}"
+    os.rename(old_path, new_path)
     if os.path.exists(new_path):
         logging.info(f"'{new_path}' successfully renamed.")
     else:
@@ -144,11 +148,9 @@ def rename_file(new_name=None, string_match=""):
     return new_path
 
 
-def process_application_data(conn, schema):
+def process_application_data(conn, schema, file):
     """ Take application data from csv and insert into table """
-    csv = rename_file(
-        new_name="AutomatedApplicationData2020.csv", string_match="Data Raw"
-    )
+    csv = rename_file(old_name=file, new_name="AutomatedApplicationData2020.csv")
     df = read_csv_to_df(csv)
     if backup_and_truncate_table(conn, os.getenv("SPROC_RAW_PREP")):
         table = os.getenv("DB_RAW_TABLE")
@@ -156,11 +158,9 @@ def process_application_data(conn, schema):
         check_table_load(conn, schema, table)
 
 
-def process_application_data_index(conn, schema):
+def process_application_data_index(conn, schema, file):
     """ Take application data index from csv and insert into table """
-    csv = rename_file(
-        new_name="AutomatedApplicationDataIndex2020.csv", string_match="Data Index"
-    )
+    csv = rename_file(old_name=file, new_name="AutomatedApplicationDataIndex2020.csv")
     df = read_csv_to_df(csv)
     if backup_and_truncate_table(conn, os.getenv("SPROC_RAW_INDEX_PREP")):
         table = os.getenv("DB_RAW_INDEX_TABLE")
@@ -205,10 +205,10 @@ def main():
         API().request_reports()
         if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
             delete_data_files(LOCALDIR)
-        download_from_ftp()
+        app_file, app_index_file = download_from_ftp()
 
-        process_application_data(conn, schema)
-        process_application_data_index(conn, schema)
+        process_application_data(conn, schema, app_file)
+        process_application_data_index(conn, schema, app_index_file)
 
         # process_change_tracking(conn)
         # process_FactDailyStatus(conn)

@@ -36,6 +36,7 @@ def read_logs(filename):
 
 
 def read_csv_to_df(csv):
+    """ Read the csv into a dataframe in preparation for database load """
     if not os.path.isfile(csv):
         raise Exception(
             f"ERROR: '{csv}' file does not exist. Most likely problem downloading from sFTP."
@@ -43,13 +44,14 @@ def read_csv_to_df(csv):
     df = pd.read_csv(csv, sep=",", quotechar='"', doublequote=True, dtype=str, header=0)
     count = len(df.index)
     if count == 0:
-        raise Exception(f"ERROR: No data was loaded from CSV file '{csv}'")
+        raise Exception(f"ERROR: No data was loaded from CSV file '{csv}'.")
     else:
-        logging.info(f"{count} rows successfully imported from CSV file '{csv}'")
+        logging.info(f"{count} rows successfully imported from CSV file '{csv}'.")
     return df
 
 
 def backup_and_truncate_table(conn, prep_sproc):
+    """ Execute the prep sproc, which truncates the primary table. """
     result = conn.exec_sproc(prep_sproc)
     count = result.fetchone()[0]
     if count == 0:
@@ -59,12 +61,17 @@ def backup_and_truncate_table(conn, prep_sproc):
 
 
 def get_records_count(conn, schema, table):
+    """ Count the number of records in a given table. """
     result = conn.query(f"SELECT COUNT(1) records FROM {schema}.{table};")
     count = result["records"].values[0]
     return count
 
 
 def load_from_backup_table(conn, schema, table):
+    """
+    Load data from backup table to primary table,
+    only when there was an issue loading the csv into the primary table.
+    """
     sql_insert = f"INSERT INTO {schema}.{table} SELECT * FROM {schema}.{table}_backup;"
     result = conn.query(sql_insert)
     count = get_records_count(conn, schema, table)
@@ -74,7 +81,7 @@ def load_from_backup_table(conn, schema, table):
 
 
 def check_table_load(conn, schema, table):
-    """Ensure data loaded successfully into destination table. If not, reload from backup table."""
+    """ Ensure data was loaded successfully into the primary table. """
     count = get_records_count(conn, schema, table)
     if count == 0:
         load_from_backup_table(conn, schema, table)
@@ -86,34 +93,8 @@ def check_table_load(conn, schema, table):
         logging.info(f"{count} rows successfully loaded into table {table}.")
 
 
-def process_change_tracking(conn):
-    """ Generate Change History """
-    SchoolYear4Digit = os.getenv("SchoolYear4Digit", "2021")
-    Enrollment_Period = os.getenv("Enrollment_Period", "2021")
-    # sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
-    sproc = os.getenv("SPROC_CHANGE_TRACK")
-
-    result = conn.exec_sproc(sproc)
-    ChangeTrackingInsertedRowCT = result.fetchone()[0]
-    logging.info(
-        f"{ChangeTrackingInsertedRowCT} Rows Successfully Loaded into Change Log"
-    )
-
-
-def process_FactDailyStatus(conn):
-    """ Generate Fact Daily Status """
-    SchoolYear4Digit = os.getenv("SchoolYear4Digit", "2021")
-    # sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
-    sproc = os.getenv("SPROC_FACT_DAILY")
-
-    result = conn.exec_sproc(sproc)
-    FactDailyStatusInsertedRowCT = result.fetchone()[0]
-    logging.info(
-        f"{FactDailyStatusInsertedRowCT} Rows Successfully Loaded into FactDailyStatus"
-    )
-
-
 def delete_data_files(directory):
+    """ Delete data files (not everything) from the given directory """
     files = [file for file in os.listdir(directory)]
     for file in files:
         if "Data" in file:
@@ -121,17 +102,23 @@ def delete_data_files(directory):
 
 
 def check_todays_file_exists(filename):
+    """ Check if today's file is in the local directory based on creation date """
     date = datetime.now().strftime("%m%d%y")
     expected_filename = f"{LOCALDIR}/{filename}*{date}*.csv"
     if len(glob.glob(expected_filename)) == 0:
         raise Exception(f"Error: '{filename}' was not downloaded.")
     else:
-        logging.info(f"'{filename}' successfully downloaded")
+        logging.info(f"'{filename}' successfully downloaded.")
 
 
-# Try Every 30 Seconds for 30 minutes
 @retry(wait=wait_fixed(30), stop=stop_after_attempt(60))
 def download_from_ftp():
+    """
+    Download data files from FTP.
+    
+    It can take some time for SchoolMint to upload the reports after the API request,
+    so we use Tenacity retry to wait up to 30 min.
+    """
     # TODO: all files are getting downloaded to local since we aren't deleting remote files
     conn = ftp.Connection()
     conn.download_dir(SOURCEDIR, LOCALDIR)
@@ -140,6 +127,7 @@ def download_from_ftp():
 
 
 def rename_file(new_name=None, string_match=""):
+    """ Rename the file if the name matches the given string """
     new_path = ""
     files = sorted(
         os.listdir(LOCALDIR), key=lambda x: os.path.getctime(LOCALDIR + "/" + x)
@@ -150,7 +138,7 @@ def rename_file(new_name=None, string_match=""):
             new_path = f"{LOCALDIR}/{new_name}"
             os.rename(old_path, new_path)
     if os.path.exists(new_path):
-        logging.info(f"'{new_path}' successfully renamed")
+        logging.info(f"'{new_path}' successfully renamed.")
     else:
         raise Exception(f"Error: '{LOCALDIR}/{new_name}' was not successfully renamed")
     return new_path
@@ -180,6 +168,33 @@ def process_application_data_index(conn, schema):
         check_table_load(conn, schema, table)
 
 
+def process_change_tracking(conn):
+    """ Generate Change History """
+    SchoolYear4Digit = os.getenv("SchoolYear4Digit", "2021")
+    Enrollment_Period = os.getenv("Enrollment_Period", "2021")
+    # sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
+    sproc = os.getenv("SPROC_CHANGE_TRACK")
+
+    result = conn.exec_sproc(sproc)
+    ChangeTrackingInsertedRowCT = result.fetchone()[0]
+    logging.info(
+        f"{ChangeTrackingInsertedRowCT} Rows Successfully Loaded into Change Log"
+    )
+
+
+def process_FactDailyStatus(conn):
+    """ Generate Fact Daily Status """
+    SchoolYear4Digit = os.getenv("SchoolYear4Digit", "2021")
+    # sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
+    sproc = os.getenv("SPROC_FACT_DAILY")
+
+    result = conn.exec_sproc(sproc)
+    FactDailyStatusInsertedRowCT = result.fetchone()[0]
+    logging.info(
+        f"{FactDailyStatusInsertedRowCT} Rows Successfully Loaded into FactDailyStatus"
+    )
+
+
 def main():
     try:
         schema = os.getenv("DB_SCHEMA")
@@ -188,12 +203,12 @@ def main():
 
         # get files
         API().request_reports()
-        # if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
-        #     delete_data_files(LOCALDIR)
-        # download_from_ftp()
+        if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
+            delete_data_files(LOCALDIR)
+        download_from_ftp()
 
-        # process_application_data(conn, schema)
-        # process_application_data_index(conn, schema)
+        process_application_data(conn, schema)
+        process_application_data_index(conn, schema)
 
         # process_change_tracking(conn)
         # process_FactDailyStatus(conn)

@@ -2,7 +2,8 @@ import os
 import sys
 import pysftp
 
-class Connection:
+
+class FTP:
     def __init__(self):
         FTP_HOST = os.getenv("FTP_Hostname")
         FTP_USER = os.getenv("FTP_Username")
@@ -10,9 +11,32 @@ class Connection:
 
         self.cnopts = pysftp.CnOpts()
         self.cnopts.hostkeys = None
-        self.ftpsrv = pysftp.Connection(host=FTP_HOST, username=FTP_USER, password=FTP_PWD, cnopts=self.cnopts)
+        self.ftpsrv = pysftp.Connection(
+            host=FTP_HOST, username=FTP_USER, password=FTP_PWD, cnopts=self.cnopts
+        )
 
+    def download_dir(self, remotedir, localdir):
+        """ Download all files from the remote directory to the local directory """
+        self.ftpsrv.get_d(remotedir, localdir, preserve_mtime=True)
 
-    def download_dir(self,sourcedir,destinationdir):
-        self.sourcedir = sourcedir
-        self.ftpsrv.get_d(self.sourcedir, destinationdir, preserve_mtime=True)
+    def _archive_file(self, file):
+        """ Place the file in an 'archive' folder within its directory """
+        self.ftpsrv.rename(
+            file, file.replace(self.remotedir, f"{self.remotedir}/archive")
+        )
+
+    def _do_nothing(self, file):
+        """ Used for files and unknown file types """
+        pass
+
+    def archive_remote_files(self, remotedir):
+        """ Archive all of the files in the specified remote directory. 
+        Do nothing for directories and unknown file types """
+        self.remotedir = remotedir
+        self.ftpsrv.walktree(
+            self.remotedir,
+            fcallback=self._archive_file,
+            dcallback=self._do_nothing,
+            ucallback=self._do_nothing,
+            recurse=False,
+        )

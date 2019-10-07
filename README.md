@@ -60,3 +60,8 @@ docker build -t schoolmint .
 ```
 docker run -it schoolmint
 ```
+
+### Run with volume mapping
+```
+docker run -it -v ${PWD}:/code/ schoolmint
+```

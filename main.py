@@ -179,10 +179,10 @@ def main():
         ftp = FTP()
 
         # get files
+        ftp.archive_remote_files(SOURCEDIR)
         API().request_reports()
         if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
             delete_data_files(LOCALDIR)
-        ftp.archive_remote_files(SOURCEDIR)
         app_file, app_index_file = download_from_ftp(ftp)
 
         process_application_data(conn, schema, app_file)

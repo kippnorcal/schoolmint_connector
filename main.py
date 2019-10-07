@@ -12,7 +12,7 @@ from sqlsorcery import MSSQL
 from tenacity import *
 
 from api import API
-import ftp
+from ftp import FTP
 from mailer import Mailer
 
 LOCALDIR = "files"
@@ -101,57 +101,34 @@ def delete_data_files(directory):
 
 
 def get_todays_file(filename):
-    """ Get the file that was modified within the last 30 min that matches the given name """
-    files = sorted(
-        os.listdir(LOCALDIR),
-        key=lambda x: os.path.getmtime(LOCALDIR + "/" + x),
-        reverse=True,
-    )
-    now = dt.datetime.now()
-    ago = now - dt.timedelta(minutes=30)
-    for file in files:
-        if filename in file:
-            status = os.stat(f"{LOCALDIR}/{file}")
-            mtime = dt.datetime.fromtimestamp(status.st_mtime)
-            if mtime > ago:
-                logging.info(f"'{filename}' successfully downloaded.")
-                return file
-            else:
-                raise Exception(f"Error: '{filename}' was not downloaded.")
+    """ Get the file that matches the given name.
+    Assume there is only one since we archived the others. """
+    files = os.listdir(LOCALDIR)
+    matching_file = [file for file in files if filename in file]
+    if matching_file:
+        logging.info(f"'{filename}' successfully downloaded.")
+        return matching_file[0]
+    else:
+        raise Exception(f"Error: '{filename}' was not downloaded.")
 
 
 @retry(wait=wait_fixed(30), stop=stop_after_attempt(60))
-def download_from_ftp():
+def download_from_ftp(ftp):
     """
     Download data files from FTP.
     
     It can take some time for SchoolMint to upload the reports after the API request,
     so we use Tenacity retry to wait up to 30 min.
     """
-    # TODO: all files are getting downloaded to local since we aren't deleting remote files
-    conn = ftp.Connection()
-    conn.download_dir(SOURCEDIR, LOCALDIR)
+    ftp.download_dir(SOURCEDIR, LOCALDIR)
     app_file = get_todays_file("Automated Application Data Raw")
     app_index_file = get_todays_file("Automated Application Data Index")
     return app_file, app_index_file
 
 
-def rename_file(old_name=None, new_name=None):
-    """ Rename the file with the given name """
-    old_path = f"{LOCALDIR}/{old_name}"
-    new_path = f"{LOCALDIR}/{new_name}"
-    os.rename(old_path, new_path)
-    if os.path.exists(new_path):
-        logging.info(f"'{new_path}' successfully renamed.")
-    else:
-        raise Exception(f"Error: '{LOCALDIR}/{new_name}' was not successfully renamed")
-    return new_path
-
-
 def process_application_data(conn, schema, file):
     """ Take application data from csv and insert into table """
-    csv = rename_file(old_name=file, new_name="AutomatedApplicationData2020.csv")
-    df = read_csv_to_df(csv)
+    df = read_csv_to_df(f"{LOCALDIR}/{file}")
     if backup_and_truncate_table(conn, os.getenv("SPROC_RAW_PREP")):
         table = os.getenv("DB_RAW_TABLE")
         conn.insert_into(table, df)
@@ -160,8 +137,7 @@ def process_application_data(conn, schema, file):
 
 def process_application_data_index(conn, schema, file):
     """ Take application data index from csv and insert into table """
-    csv = rename_file(old_name=file, new_name="AutomatedApplicationDataIndex2020.csv")
-    df = read_csv_to_df(csv)
+    df = read_csv_to_df(f"{LOCALDIR}/{file}")
     if backup_and_truncate_table(conn, os.getenv("SPROC_RAW_INDEX_PREP")):
         table = os.getenv("DB_RAW_INDEX_TABLE")
         conn.insert_into(table, df)
@@ -200,12 +176,14 @@ def main():
         schema = os.getenv("DB_SCHEMA")
         conn = MSSQL()
         mailer = Mailer()
+        ftp = FTP()
 
         # get files
         API().request_reports()
         if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
             delete_data_files(LOCALDIR)
-        app_file, app_index_file = download_from_ftp()
+        ftp.archive_remote_files(SOURCEDIR)
+        app_file, app_index_file = download_from_ftp(ftp)
 
         process_application_data(conn, schema, app_file)
         process_application_data_index(conn, schema, app_index_file)
@@ -223,4 +201,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

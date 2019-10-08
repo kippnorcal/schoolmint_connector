@@ -18,7 +18,6 @@ from mailer import Mailer
 LOCALDIR = "files"
 SOURCEDIR = "schoolmint"
 
-
 logging.basicConfig(
     handlers=[
         logging.FileHandler(filename="app.log", mode="w+"),
@@ -29,10 +28,12 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %I:%M:%S%p %Z",
 )
 
+# Quiet the logging from pysftp
 logging.getLogger("paramiko").setLevel(logging.ERROR)
 
 
 def read_logs(filename):
+    """ Read the given file """
     with open(filename) as f:
         return f.read()
 
@@ -153,12 +154,14 @@ def process_application_data_index(conn, schema, file):
 
 
 def process_change_tracking(conn):
+    """ Execute sproc to generate change history """
     result = conn.exec_sproc(os.getenv("SPROC_CHANGE_TRACK"))
     count = result.fetchone()[0]
     logging.info(f"Loaded {count} rows into Change History table.")
 
 
 def process_fact_daily_status(conn):
+    """ Execute sproc to generate fact daily status table """
     result = conn.exec_sproc(os.getenv("SPROC_FACT_DAILY"))
     count = result.fetchone()[0]
     logging.info(f"Loaded {count} rows into Fact Daily Status table.")

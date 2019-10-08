@@ -2,7 +2,18 @@ CREATE PROC [custom].[sproc_SchoolMint_RawIndex_PrepareTables]
 AS
 SET NOCOUNT ON
 
---If RawIndex Table has data, then truncate backup table and load backup table from RawIndex. Otherwise, dont truncate Backup Table
+/***************************************************************************
+Name: custom.sproc_SchoolMint_RawIndex_PrepareTables
+
+Business Purpose: Prepare primary and backup tables for SchoolMint load.
+If the primary table has data, then truncate the backup table and load it with data frim the primary table.
+Otherwise, don't truncate the backup table.
+
+Called daily by SchoolMint python code.
+
+Comments:
+2019-10-08	3:30PM		pkats		Initial sproc
+***************************************************************************/
 IF (
 		SELECT count(1)
 		FROM custom.schoolmint_ApplicationDataIndex_raw

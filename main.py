@@ -1,236 +1,195 @@
-from os import getenv
 import argparse
+import datetime as dt
+import glob
+import logging
 import os
+import sys
+import time
+import traceback
+
 import pandas as pd
 from sqlsorcery import MSSQL
-from mailer import Mailer
-import logging
-import sys
-import traceback
-import downloadftp
 from tenacity import *
-import datetime 
-import time
 
 from api import API
+from ftp import FTP
+from mailer import Mailer
 
-
+LOCALDIR = "files"
+SOURCEDIR = "schoolmint"
 
 
 logging.basicConfig(
-	handlers = [logging.FileHandler(filename="app.log",mode='w+'), logging.StreamHandler(sys.stdout)],
-	level=logging.INFO,
-	format="%(asctime)s | %(levelname)s: %(message)s",
-	datefmt="%Y-%m-%d %I:%M:%S%p %Z",
+    handlers=[
+        logging.FileHandler(filename="app.log", mode="w+"),
+        logging.StreamHandler(sys.stdout),
+    ],
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %I:%M:%S%p %Z",
 )
 
+logging.getLogger("paramiko").setLevel(logging.ERROR)
+
+
 def read_logs(filename):
-	with open(filename) as f:
-		return f.read()
-
-def read_from_csv(CSVFilename):
-
-	#Ensure File Really Exists
-	if (not os.path.isfile(CSVFilename)):
-		raise Exception(f'Error: "{CSVFilename}" File Does Not Exists. Most likely problem downloading from sFTP')
-
-	#Load CSV into Pandas DF
-	df = pd.read_csv(CSVFilename,  sep=',', quotechar = '"' , doublequote = True,dtype=str,header=0)
-
-	#Ensure Data is really in the DataFrame
-	RowsImported=(len(df.index))
-	if (RowsImported == 0):
-		raise Exception(f'Error - No Data Was Loaded From CSV File: "{CSVFilename}"')
-	else:
-		logging.info(f'{RowsImported} Rows Successfully Imported From CSV File')
-		
-	return RowsImported,df
-
-def insert_into_table(df,Schema,Table,prepare_sproc,post_process_sproc):
-	
-
-	conn = MSSQL()
-	result=conn.exec_sproc(prepare_sproc)
-	InitialRowCT=result.fetchone()[0]
-
-	#Ensure Destination Table is Clean and Ready to be Loaded
-	if (InitialRowCT == 0 ):
-
-		#Load table from DF
-		conn.insert_into(Table, df)
-
-		#Get Counts Of Loaded Data
-		sql=f"select count(1) ct from {Schema}.{Table};"
-		result=conn.query(sql)
-		RowCT=result['ct'].values[0]
-
-		
-		#Ensure data loaded successfully into destination table. If not, reload from backup table.
-		if (RowCT == 0 ):
-			sql=f"insert into {Schema}.{Table} select * from {Schema}.{Table}_backup;select count(1) ct from {Schema}.{Table};"
-			result=conn.query(sql)
-			InsertedRowCT=result['ct'].values[0]
-
-			raise Exception(f'Error No Rows Loaded Into Table. {InsertedRowCT} Rows Reverted From Backup Table')
-		else:
-			#Since we loaded data into destination table successfully. Lets get count of rows in final backup table.
-			sql=f"select count(1) ct from {Schema}.{Table}_backup;"
-			result=conn.query(sql)
-			BackupRowCT=result['ct'].values[0]
-			
-			logging.info(f'{BackupRowCT} Rows Successfully Loaded into Backup Table')
-			logging.info(f'{RowCT} Rows Successfully Loaded into Table')
+    with open(filename) as f:
+        return f.read()
 
 
-	else:
-		raise Exception('Error Loading Data. Table Was Not Truncated.')	
-
-	conn.exec_sproc(post_process_sproc)
-
-	return BackupRowCT,RowCT
-
-
-def process_change_tracking():
-	##Generate Change History
-	conn = MSSQL()
-	if eval(getenv("DEV_DB_Environment", "False")):
-		#Development Environment
-		sproc=f"sproc_zdevpk_SchoolMint_Create_ChangeTracking_Entries"
-	else:
-		sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
-
-	result=conn.exec_sproc(sproc)	
-	ChangeTrackingInsertedRowCT=result.fetchone()[0]
-	logging.info(f'{ChangeTrackingInsertedRowCT} Rows Successfully Loaded into Change Log')
-	
-	return ChangeTrackingInsertedRowCT
-	#RowCT=conn.query(sql)
+def read_csv_to_df(csv):
+    """ Read the csv into a dataframe in preparation for database load """
+    if not os.path.isfile(csv):
+        raise Exception(
+            f"ERROR: '{csv}' file does not exist. Most likely problem downloading from sFTP."
+        )
+    df = pd.read_csv(csv, sep=",", quotechar='"', doublequote=True, dtype=str, header=0)
+    count = len(df.index)
+    if count == 0:
+        raise Exception(f"ERROR: No data was loaded from CSV file '{csv}'.")
+    else:
+        logging.info(f"Read {count} rows from CSV file '{csv}'.")
+    return df
 
 
-def process_FactDailyStatus():
-	##Generate Change History
-	conn = MSSQL()
-	if eval(getenv("DEV_DB_Environment", "False")):
-		#Development Environment
-		sproc=f"sproc_zdevpk_SchoolMint_Create_FactDailyStatus"
-	else:
-		sproc=f"sproc_SchoolMint_Create_FactDailyStatus"
-
-	result=conn.exec_sproc(sproc)	
-	FactDailyStatusInsertedRowCT=result.fetchone()[0]
-	logging.info(f'{FactDailyStatusInsertedRowCT} Rows Successfully Loaded into FactDailyStatus')
-	
-	return FactDailyStatusInsertedRowCT
+def backup_and_truncate_table(conn, prep_sproc):
+    """ Execute the prep sproc, which truncates the primary table. """
+    result = conn.exec_sproc(prep_sproc)
+    count = result.fetchone()[0]
+    if count == 0:
+        return True
+    else:
+        raise Exception(f"ERROR: Table {table} was not truncated.")
 
 
-def api_request():
-	api = API()
-	api_tokens = [getenv("API_TOKEN_DATA"),getenv("API_TOKEN_DATA_INDEX")]
-	for api_token in api_tokens:
-		api.post_demand_export(api_token=api_token)
-
-#Try Every 30 Seconds for 30 minutes
-@retry(wait = wait_fixed(30) , stop=stop_after_attempt(60))
-def download_files(deletelocalfiles=False,sourcedir=None,localdir=None,finalCSVname=None,DeleteRemoteFiles=False,RemoteFileIncludeString=""):
-	#Clean Out Destination Directory
-	if deletelocalfiles:
-		filelist = [ filename for filename in os.listdir(localdir) ]
-		for filename in filelist:
-			if RemoteFileIncludeString in filename:
-				os.remove(os.path.join(localdir, filename))
+def get_records_count(conn, schema, table):
+    """ Count the number of records in a given table. """
+    result = conn.query(f"SELECT COUNT(1) records FROM {schema}.{table};")
+    count = result["records"].values[0]
+    return count
 
 
-	#DownloadNewFiles
-	downloading = downloadftp.Connection()
-	downloading.download_dir(sourcedir,localdir)
-	
-	#Rename Latest Downloaded File Index File
-	dst=""
-	filelist =  sorted(os.listdir(localdir), key = lambda x: os.path.getctime(localdir + '/' + x))   
-	for filename in filelist:
-	 	if RemoteFileIncludeString in filename:
-	 		src =localdir + '/' + filename 
-	 		dst =localdir + '/' +  finalCSVname
-	 		os.rename(src, dst) 
+def load_from_backup_table(conn, schema, table):
+    """
+    Load data from backup table to primary table,
+    only when there was an issue loading the csv into the primary table.
+    """
+    sql_insert = f"INSERT INTO {schema}.{table} SELECT * FROM {schema}.{table}_backup;"
+    result = conn.query(sql_insert)
+    count = get_records_count(conn, schema, table)
+    raise Exception(
+        f"ERROR: No rows loaded into {table}. {count} records reverted from backup table."
+    )
 
-	if os.path.exists(dst):
-		logging.info(f'{dst} Successfully Downloaded')
-	else:
-		raise Exception(f"Error: '{localdir}/{finalCSVname}' Was Not Successfully Downloaded")
 
-	#Delete Files From Remote Server When Done Downloading
-	if DeleteRemoteFiles:
-	 	downloading.delete_files_remotedir(sourcedir)
+def check_table_load(conn, schema, table):
+    """ Ensure data was loaded successfully into the primary table. """
+    count = get_records_count(conn, schema, table)
+    if count == 0:
+        load_from_backup_table(conn, schema, table)
+    else:
+        backup_count = get_records_count(conn, schema, f"{table}_backup")
+        logging.info(f"Loaded {backup_count} rows into backup table '{table}_backup'.")
+        logging.info(f"Loaded {count} rows into table '{table}''.")
 
+
+def delete_data_files(directory):
+    """ Delete data files (not everything) from the given directory """
+    for file in os.listdir(directory):
+        if "Data" in file:
+            os.remove(os.path.join(directory, file))
+
+
+def get_latest_file(filename):
+    """ Get the file that matches the given name.
+    Reverse sort by modification date in case there are multiple. """
+    all_files = os.listdir(LOCALDIR)
+    matched_files = [file for file in all_files if filename in file]
+    files = sorted(
+        matched_files,
+        key=lambda file: os.path.getmtime(f"{LOCALDIR}/{file}"),
+        reverse=True,
+    )
+    if files:
+        file = files[0]
+        logging.info(f"Downloaded '{file}'.")
+        return file
+    else:
+        raise Exception(f"Error: '{filename}' was not downloaded.")
+
+
+@retry(wait=wait_fixed(30), stop=stop_after_attempt(60))
+def download_from_ftp(ftp):
+    """
+    Download data files from FTP.
+    
+    It can take some time for SchoolMint to upload the reports after the API request,
+    so we use Tenacity retry to wait up to 30 min.
+    """
+    ftp.download_dir(SOURCEDIR, LOCALDIR)
+    app_file = get_latest_file("Automated Application Data Raw")
+    app_index_file = get_latest_file("Automated Application Data Index")
+    return app_file, app_index_file
+
+
+def process_application_data(conn, schema, file):
+    """ Take application data from csv and insert into table """
+    df = read_csv_to_df(f"{LOCALDIR}/{file}")
+    if backup_and_truncate_table(conn, os.getenv("SPROC_RAW_PREP")):
+        table = os.getenv("DB_RAW_TABLE")
+        conn.insert_into(table, df)
+        check_table_load(conn, schema, table)
+        conn.exec_sproc(os.getenv("SPROC_RAW_POST"))
+
+
+def process_application_data_index(conn, schema, file):
+    """ Take application data index from csv and insert into table """
+    df = read_csv_to_df(f"{LOCALDIR}/{file}")
+    if backup_and_truncate_table(conn, os.getenv("SPROC_RAW_INDEX_PREP")):
+        table = os.getenv("DB_RAW_INDEX_TABLE")
+        conn.insert_into(table, df)
+        check_table_load(conn, schema, table)
+        conn.exec_sproc(os.getenv("SPROC_RAW_INDEX_POST"))
+
+
+def process_change_tracking(conn):
+    result = conn.exec_sproc(os.getenv("SPROC_CHANGE_TRACK"))
+    count = result.fetchone()[0]
+    logging.info(f"Loaded {count} rows into Change History table.")
+
+
+def process_fact_daily_status(conn):
+    result = conn.exec_sproc(os.getenv("SPROC_FACT_DAILY"))
+    count = result.fetchone()[0]
+    logging.info(f"Loaded {count} rows into Fact Daily Status table.")
 
 
 def main():
-	try:
-		#Set Up ENV Variables
-		Schema = getenv("DBSCHEMA", 'custom')
+    try:
+        schema = os.getenv("DB_SCHEMA")
+        conn = MSSQL()
+        mailer = Mailer()
+        ftp = FTP()
 
-		#eval is used here to convert value from string to boolean
-		deletelocalfiles= eval(getenv("DELETELOCALFILES", "True"))
-		DeleteRemoteFiles=eval(getenv("DELETE_REMOTE_FILES", "True"))
+        ftp.archive_remote_files(SOURCEDIR)
+        API().request_reports()
+        if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
+            delete_data_files(LOCALDIR)
+        app_file, app_index_file = download_from_ftp(ftp)
 
-		if eval(getenv("DEV_DB_Environment", "False")):
-			#Development Environment
-			RawTable = getenv("DBRAWTABLE_DEV", 'schoolmint_zdevpk_ApplicationData_raw')
-			RawIndexTable = getenv("DBRAW_INDEX_TABLE_DEV", 'schoolmint_zdevpk_applicationdataindex_raw')
-			raw_sproc='sproc_zdev_schoolmint_raw_preparetables'
-			index_sproc='sproc_zdev_schoolmint_rawindex_preparetables'
-			post_process_sproc='sproc_zdev_SchoolMint_UpdateSchoolYear'
-			raw_post_process_sproc='sproc_zdev_SchoolMint_Raw_UpdateSchoolYear'
-			index_post_process_sproc='sproc_zdev_SchoolMint_Index_UpdateSchoolYear'
-		else:
-			RawTable = getenv("DBRAWTABLE", 'schoolmint_ApplicationData_raw')
-			RawIndexTable = getenv("DBRAW_INDEX_TABLE", 'schoolmint_applicationdataindex_raw')
-			raw_sproc='sproc_SchoolMint_Raw_PrepareTables'
-			index_sproc='sproc_SchoolMint_RawIndex_PrepareTables'
-			raw_post_process_sproc='sproc_SchoolMint_Raw_UpdateSchoolYear'
-			index_post_process_sproc='sproc_SchoolMint_Index_UpdateSchoolYear'
+        process_application_data(conn, schema, app_file)
+        process_application_data_index(conn, schema, app_index_file)
 
+        process_change_tracking(conn)
+        process_fact_daily_status(conn)
 
-		#Instantiate Mailer
-		mailer = Mailer()
+        success_message = read_logs("app.log")
+        mailer.notify(results=success_message)
+    except Exception as e:
+        logging.exception(e)
+        stack_trace = traceback.format_exc()
+        mailer.notify(success=False, error_message=stack_trace)
 
-		# Hit API
-		api_request()
-
-		# Check if files exist and wait if they don't
-
-		#Download Latest Files
-
-		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationData2020.csv',DeleteRemoteFiles=False,RemoteFileIncludeString="Data Raw")
-
-		#Load Data Frame from Downloaded CSV
-		RawRowsImported, df= read_from_csv('files/AutomatedApplicationData2020.csv')
-
-		#Load Database from DataFrame
-		RawBackupRowCT, RawRowCT= insert_into_table(df, Schema,RawTable,raw_sproc,raw_post_process_sproc)
-
-		download_files(deletelocalfiles=deletelocalfiles,sourcedir='schoolmint',localdir='files',finalCSVname='AutomatedApplicationDataIndex2020.csv',DeleteRemoteFiles=DeleteRemoteFiles,RemoteFileIncludeString="Data Index")
-	
-		#Load Data Frame from Downloaded CSV
-		RawIndexRowsImported, df= read_from_csv('files/AutomatedApplicationDataIndex2020.csv')
-
-		#Load Database from DataFrame
-		RawIndexBackupRowCT, RawIndexRowCT= insert_into_table(df, Schema,RawIndexTable,index_sproc,index_post_process_sproc)
-
-		#Create Change Tracking Rows
-		ChangeTrackingInsertedRowCT=process_change_tracking()
-
-		#Create FactDailyStatus Rows
-		ChangeFactDailyStatusInsertedRowCT=process_FactDailyStatus()
-
-		#Send Success Message
-		success_message = read_logs("app.log")
-		mailer.notify(results=success_message)
-
-	except Exception as e:
-		logging.exception(e)
-		stack_trace = traceback.format_exc()
-		mailer.notify(success=False, error_message=stack_trace)
 
 if __name__ == "__main__":
-	main()
+    main()

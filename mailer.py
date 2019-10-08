@@ -9,9 +9,9 @@ class Mailer:
         self.password = getenv("GMAIL_PWD")
         self.server = SMTP_SSL("smtp.gmail.com", 465)
         self.from_address = "KIPP Bay Area Job Notification"
-        self.to_name = getenv("TEST_EMAIL_TO_NAME",getenv("TO_NAME"))   ##Sends To TestEmail Address When Testing
-        self.to_address = getenv("TEST_EMAIL_ADDRESS",getenv("TO_ADDRESS"))    ##Sends To TestEmail Address When Testing
-        self.to_bcc = getenv("TEST_BCC_ADDRESS",'')
+        self.to_name = getenv("TO_NAME")
+        self.to_address = getenv("TO_ADDRESS")
+        self.to_bcc = getenv("BCC_ADDRESS",'')
 
     def _subject_line(self):
         subject_type = "Success" if self.success else "Error"

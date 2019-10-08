@@ -1,4 +1,4 @@
-CREATE PROC [custom].[sproc_SchoolMint_Create_ChangeTracking_Entries] (@SchoolYear4Digit varchar(4),@Enrollment_Period varchar(20))
+CREATE PROC [custom].[sproc_SchoolMint_Create_ChangeTracking_Entries]
 AS
 set nocount on
 
@@ -24,9 +24,8 @@ INSERT INTO [custom].[schoolmint_ApplicationData_changehistory]
            ,[Last_Update_Date_Previous]
            ,[Last_Status_Change_Previous]
            ,[ChangeTracking]
-           --,[ChangeTrackingDate]
            ,[SchoolYear4Digit]
-		   )
+       )
 SELECT  raw1.[Application_ID]
            ,raw1.[SM_Student_ID]
            ,raw1.[Application_Student_Id]
@@ -34,7 +33,7 @@ SELECT  raw1.[Application_ID]
            ,raw1.[Application_Status]
            ,raw1.[Application_Type]
            ,raw1.[Account_ID]
-           ,@Enrollment_Period
+           ,lk.Enrollment_Period_str
            ,raw1.[Submission_Date]
            ,raw1.[Submitted_By]
            ,raw1.[Offered_Date]
@@ -47,25 +46,25 @@ SELECT  raw1.[Application_ID]
            ,back1.[Application_Status]
            ,back1.[Last_Update_Date]
            ,back1.[Last_Status_Change]
-           	,CASE 
-			WHEN raw1.Application_ID <> isnull(back1.Application_ID, 999999)
-				THEN 'NEW'
-			WHEN raw1.[Application_Status] = back1.[Application_Status]
-				THEN 'NonStatusChange'
-			WHEN raw1.[Application_Status] = isnull(back1.[Application_Status], raw1.[Application_Status])
-				THEN 'StatusUpdate'
-			WHEN raw1.[Application_Status] <> isnull(back1.[Application_Status], 999)
-				THEN 'StatusChange'
-			END
-           --,raw1.[ChangeTrackingDate]
-		   ,@SchoolYear4Digit
-		FROM [Cust14315].[custom].schoolmint_applicationdata_raw raw1
-		LEFT JOIN [Cust14315].[custom].schoolmint_applicationdata_raw_backup back1 ON raw1.Application_ID = back1.Application_ID
-		WHERE (
-		raw1.[Application_Status] <> isnull(back1.[Application_Status], 999999)
-		OR raw1.[Last_Update_Date] <> isnull(back1.[Last_Update_Date], '1970-01-01')
-		OR raw1.[Last_Status_Change] <> isnull(back1.[Last_Status_Change], 999999)
-		)
+            ,CASE 
+      WHEN raw1.Application_ID <> isnull(back1.Application_ID, 999999)
+        THEN 'NEW'
+      WHEN raw1.[Application_Status] = back1.[Application_Status]
+        THEN 'NonStatusChange'
+      WHEN raw1.[Application_Status] = isnull(back1.[Application_Status], raw1.[Application_Status])
+        THEN 'StatusUpdate'
+      WHEN raw1.[Application_Status] <> isnull(back1.[Application_Status], 999)
+        THEN 'StatusChange'
+      END
+       ,lk.SchoolYear4Digit_int
+    FROM [custom].schoolmint_applicationdata_raw raw1
+    LEFT JOIN [custom].schoolmint_applicationdata_raw_backup back1 ON raw1.Application_ID = back1.Application_ID
+    LEFT JOIN [custom].SchoolMint_lk_Enrollment lk ON raw1.Enrollment_Period = lk.Enrollment_Period_id
+    WHERE (
+    raw1.[Application_Status] <> isnull(back1.[Application_Status], 999999)
+    OR raw1.[Last_Update_Date] <> isnull(back1.[Last_Update_Date], '1970-01-01')
+    OR raw1.[Last_Status_Change] <> isnull(back1.[Last_Status_Change], 999999)
+    )
 
 
 

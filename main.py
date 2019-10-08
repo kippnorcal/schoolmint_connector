@@ -139,6 +139,7 @@ def process_application_data(conn, schema, file):
         table = os.getenv("DB_RAW_TABLE")
         conn.insert_into(table, df)
         check_table_load(conn, schema, table)
+        conn.exec_sproc(os.getenv("SPROC_RAW_POST"))
 
 
 def process_application_data_index(conn, schema, file):
@@ -148,33 +149,19 @@ def process_application_data_index(conn, schema, file):
         table = os.getenv("DB_RAW_INDEX_TABLE")
         conn.insert_into(table, df)
         check_table_load(conn, schema, table)
+        conn.exec_sproc(os.getenv("SPROC_RAW_INDEX_POST"))
 
 
 def process_change_tracking(conn):
-    """ Generate Change History """
-    SchoolYear4Digit = os.getenv("SchoolYear4Digit", "2021")
-    Enrollment_Period = os.getenv("Enrollment_Period", "2021")
-    # sproc=f"sproc_SchoolMint_Create_ChangeTracking_Entries '{SchoolYear4Digit}','{Enrollment_Period}'"
-    sproc = os.getenv("SPROC_CHANGE_TRACK")
-
-    result = conn.exec_sproc(sproc)
-    ChangeTrackingInsertedRowCT = result.fetchone()[0]
-    logging.info(
-        f"{ChangeTrackingInsertedRowCT} Rows Successfully Loaded into Change Log"
-    )
+    result = conn.exec_sproc(os.getenv("SPROC_CHANGE_TRACK"))
+    count = result.fetchone()[0]
+    logging.info(f"Loaded {count} rows into Change History table.")
 
 
-def process_FactDailyStatus(conn):
-    """ Generate Fact Daily Status """
-    SchoolYear4Digit = os.getenv("SchoolYear4Digit", "2021")
-    # sproc=f"sproc_SchoolMint_Create_FactDailyStatus '{SchoolYear4Digit}'"
-    sproc = os.getenv("SPROC_FACT_DAILY")
-
-    result = conn.exec_sproc(sproc)
-    FactDailyStatusInsertedRowCT = result.fetchone()[0]
-    logging.info(
-        f"{FactDailyStatusInsertedRowCT} Rows Successfully Loaded into FactDailyStatus"
-    )
+def process_fact_daily_status(conn):
+    result = conn.exec_sproc(os.getenv("SPROC_FACT_DAILY"))
+    count = result.fetchone()[0]
+    logging.info(f"Loaded {count} rows into Fact Daily Status table.")
 
 
 def main():
@@ -184,7 +171,6 @@ def main():
         mailer = Mailer()
         ftp = FTP()
 
-        # get files
         ftp.archive_remote_files(SOURCEDIR)
         API().request_reports()
         if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
@@ -194,8 +180,8 @@ def main():
         process_application_data(conn, schema, app_file)
         process_application_data_index(conn, schema, app_index_file)
 
-        # process_change_tracking(conn)
-        # process_FactDailyStatus(conn)
+        process_change_tracking(conn)
+        process_fact_daily_status(conn)
 
         success_message = read_logs("app.log")
         mailer.notify(results=success_message)

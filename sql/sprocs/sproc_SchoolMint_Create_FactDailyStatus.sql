@@ -1,10 +1,3 @@
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-
 CREATE PROC [custom].[sproc_SchoolMint_Create_FactDailyStatus] 
 AS
 SET NOCOUNT ON
@@ -18,7 +11,7 @@ AS (
 	SELECT *
 	FROM [custom].schoolmint_ApplicationData_raw a
 	LEFT JOIN custom.schoolmint_ApplicationStatuses b ON a.Application_Status = b.STATUS
-	LEFT JOIN [custom].SchoolMint_Enrollment_LKP lkp ON a.Enrollment_Period = lkp.Enrollment_Period_id
+	LEFT JOIN [custom].SchoolMint_lk_Enrollment lk ON a.Enrollment_Period = lk.Enrollment_Period_id
 	)
 ,current_schoolyear as
 (select max(SchoolYear4Digit_int) SchoolYear4Digit_int from a)
@@ -74,6 +67,3 @@ ORDER BY schoolid
 	,STATUS
 
 SELECT @@rowcount AS rc
-GO
-
-

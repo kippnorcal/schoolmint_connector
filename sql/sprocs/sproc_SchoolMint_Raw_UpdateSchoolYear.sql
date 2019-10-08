@@ -10,10 +10,11 @@ AS
 
 SET NOCOUNT ON
 
-	update raw1
-	set SchoolYear4Digit = SchoolYear4Digit_int
-	from custom.schoolmint_ApplicationData_raw raw1 
-	join [custom].SchoolMint_Enrollment_LKP lkp ON raw1.Enrollment_Period = lkp.Enrollment_Period_id
+	UPDATE raw1
+	SET SchoolYear4Digit = SchoolYear4Digit_int
+	FROM custom.schoolmint_ApplicationData_raw raw1
+	INNER JOIN [custom].SchoolMint_lk_Enrollment lk
+		ON raw1.Enrollment_Period = lk.Enrollment_Period_id
 
 GO
 

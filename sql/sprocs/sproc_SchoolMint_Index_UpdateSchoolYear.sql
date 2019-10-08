@@ -9,12 +9,17 @@ GO
 CREATE PROC [custom].[sproc_SchoolMint_Index_UpdateSchoolYear]
 AS
 
+
 SET NOCOUNT ON
 
-	update index1
-	set SchoolYear4Digit = SchoolYear4Digit_int
-	from custom.schoolmint_ApplicationDataIndex_raw index1
-	join custom.schoolmint_ApplicationData_raw raw1 on raw1.Application_ID=index1.application_id
-	join [custom].SchoolMint_Enrollment_LKP lkp ON raw1.Enrollment_Period = lkp.Enrollment_Period_id
+	UPDATE index1
+	SET SchoolYear4Digit = SchoolYear4Digit_int
+	FROM custom.schoolmint_ApplicationDataIndex_raw index1
+	INNER JOIN custom.schoolmint_ApplicationData_raw raw1 
+		ON raw1.Application_ID=index1.application_id
+	INNER JOIN [custom].SchoolMint_lk_Enrollment lk 
+		ON raw1.Enrollment_Period = lk.Enrollment_Period_id
+
+
 
 GO

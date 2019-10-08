@@ -1,10 +1,3 @@
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
-
 CREATE PROC [custom].[sproc_SchoolMint_Create_ChangeTracking_Entries]
 AS
 set nocount on
@@ -40,7 +33,7 @@ SELECT  raw1.[Application_ID]
            ,raw1.[Application_Status]
            ,raw1.[Application_Type]
            ,raw1.[Account_ID]
-           ,lkp.Enrollment_Period_str
+           ,lk.Enrollment_Period_str
            ,raw1.[Submission_Date]
            ,raw1.[Submitted_By]
            ,raw1.[Offered_Date]
@@ -63,10 +56,10 @@ SELECT  raw1.[Application_ID]
       WHEN raw1.[Application_Status] <> isnull(back1.[Application_Status], 999)
         THEN 'StatusChange'
       END
-       ,lkp.SchoolYear4Digit_int
+       ,lk.SchoolYear4Digit_int
     FROM [custom].schoolmint_applicationdata_raw raw1
     LEFT JOIN [custom].schoolmint_applicationdata_raw_backup back1 ON raw1.Application_ID = back1.Application_ID
-    LEFT JOIN [custom].SchoolMint_Enrollment_LKP lkp ON raw1.Enrollment_Period = lkp.Enrollment_Period_id
+    LEFT JOIN [custom].SchoolMint_lk_Enrollment lk ON raw1.Enrollment_Period = lk.Enrollment_Period_id
     WHERE (
     raw1.[Application_Status] <> isnull(back1.[Application_Status], 999999)
     OR raw1.[Last_Update_Date] <> isnull(back1.[Last_Update_Date], '1970-01-01')
@@ -76,4 +69,3 @@ SELECT  raw1.[Application_ID]
 
 
 SELECT @@rowcount AS rc
-GO

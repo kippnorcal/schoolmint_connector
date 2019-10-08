@@ -100,14 +100,19 @@ def delete_data_files(directory):
             os.remove(os.path.join(directory, file))
 
 
-def get_todays_file(filename):
+def get_latest_file(filename):
     """ Get the file that matches the given name.
-    Assume there is only one since we archived the others. """
-    files = os.listdir(LOCALDIR)
-    matching_file = [file for file in files if filename in file]
-    if matching_file:
+    Reverse sort by modification date in case there are multiple. """
+    all_files = os.listdir(LOCALDIR)
+    matched_files = [file for file in all_files if filename in file]
+    files = sorted(
+        matched_files,
+        key=lambda file: os.path.getmtime(f"{LOCALDIR}/{file}"),
+        reverse=True,
+    )
+    if files:
         logging.info(f"'{filename}' successfully downloaded.")
-        return matching_file[0]
+        return files[0]
     else:
         raise Exception(f"Error: '{filename}' was not downloaded.")
 
@@ -121,8 +126,8 @@ def download_from_ftp(ftp):
     so we use Tenacity retry to wait up to 30 min.
     """
     ftp.download_dir(SOURCEDIR, LOCALDIR)
-    app_file = get_todays_file("Automated Application Data Raw")
-    app_index_file = get_todays_file("Automated Application Data Index")
+    app_file = get_latest_file("Automated Application Data Raw")
+    app_index_file = get_latest_file("Automated Application Data Index")
     return app_file, app_index_file
 
 

@@ -29,6 +29,8 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %I:%M:%S%p %Z",
 )
 
+logging.getLogger("paramiko").setLevel(logging.ERROR)
+
 
 def read_logs(filename):
     with open(filename) as f:
@@ -46,7 +48,7 @@ def read_csv_to_df(csv):
     if count == 0:
         raise Exception(f"ERROR: No data was loaded from CSV file '{csv}'.")
     else:
-        logging.info(f"{count} rows successfully imported from CSV file '{csv}'.")
+        logging.info(f"Read {count} rows from CSV file '{csv}'.")
     return df
 
 
@@ -87,10 +89,8 @@ def check_table_load(conn, schema, table):
         load_from_backup_table(conn, schema, table)
     else:
         backup_count = get_records_count(conn, schema, f"{table}_backup")
-        logging.info(
-            f"{backup_count} rows successfully loaded into backup table {table}_backup."
-        )
-        logging.info(f"{count} rows successfully loaded into table {table}.")
+        logging.info(f"Loaded {backup_count} rows into backup table '{table}_backup'.")
+        logging.info(f"Loaded {count} rows into table '{table}''.")
 
 
 def delete_data_files(directory):
@@ -111,8 +111,9 @@ def get_latest_file(filename):
         reverse=True,
     )
     if files:
-        logging.info(f"'{filename}' successfully downloaded.")
-        return files[0]
+        file = files[0]
+        logging.info(f"Downloaded '{file}'.")
+        return file
     else:
         raise Exception(f"Error: '{filename}' was not downloaded.")
 

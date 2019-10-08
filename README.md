@@ -17,6 +17,10 @@ Load all SchoolMint Application and Lottery Data into database for analysis.
 git clone https://github.com/kipp-bayarea/schoolmint_connector.git
 ```
 
+### FTP setup
+Create a folder named 'archive' within the FTP directory that SchoolMint is dropping files to.
+
+
 ### Create .env file
 ```
 DB_SERVER=

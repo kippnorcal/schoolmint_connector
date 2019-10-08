@@ -43,17 +43,3 @@ class Mailer:
             msg = self._message()
             recpt = [self.to_address, self.to_bcc]
             s.sendmail(self.user, recpt, msg)
-
-    def send_mail(self, EmailFrom, EmailBody, EmailCC, EmailBCC, EmailTo, EmailSubject):
-        """ Log into the email server and send mail """
-        msg = MIMEText(EmailBody)
-        msg["Subject"] = EmailSubject
-        msg["From"] = EmailFrom
-        msg["To"] = EmailTo
-        msg["CC"] = EmailCC
-        msg = msg.as_string()
-
-        with self.server as s:
-            s.login(self.user, self.password)
-            recpt = [EmailTo, EmailBCC]
-            s.sendmail(self.user, recpt, msg)

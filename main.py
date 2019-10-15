@@ -175,6 +175,7 @@ def main():
         ftp = FTP()
 
         ftp.archive_remote_files(SOURCEDIR)
+        ftp.delete_old_archive_files(SOURCEDIR)
         API().request_reports()
         if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
             delete_data_files(LOCALDIR)

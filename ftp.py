@@ -1,4 +1,5 @@
 import os
+import datetime as dt
 import sys
 import pysftp
 
@@ -8,6 +9,7 @@ class FTP:
         FTP_HOST = os.getenv("FTP_Hostname")
         FTP_USER = os.getenv("FTP_Username")
         FTP_PWD = os.getenv("FTP_PWD")
+        self.ARCHIVE_MAX_DAYS = int(os.getenv("ARCHIVE_MAX_DAYS"))
 
         self.cnopts = pysftp.CnOpts()
         self.cnopts.hostkeys = None
@@ -36,6 +38,24 @@ class FTP:
         self.ftpsrv.walktree(
             self.remotedir,
             fcallback=self._archive_file,
+            dcallback=self._do_nothing,
+            ucallback=self._do_nothing,
+            recurse=False,
+        )
+
+    def _delete_old_file(self, file):
+        """ Find the age limit based on the env variable and delete files older than this limit """
+        stat = self.ftpsrv.stat(file)
+        age_limit = dt.datetime.now() - dt.timedelta(self.ARCHIVE_MAX_DAYS)
+        if stat.st_mtime < age_limit.timestamp():
+            self.ftpsrv.remove(file)
+
+    def delete_old_archive_files(self, remotedir):
+        """ Delete old files from the archive folder """
+        archivedir = f"{remotedir}/archive"
+        self.ftpsrv.walktree(
+            archivedir,
+            fcallback=self._delete_old_file,
             dcallback=self._do_nothing,
             ucallback=self._do_nothing,
             recurse=False,

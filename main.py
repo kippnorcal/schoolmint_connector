@@ -51,16 +51,6 @@ def read_csv_to_df(csv):
     return df
 
 
-def backup_and_truncate_table(conn, prep_sproc):
-    """ Execute the prep sproc, which truncates the primary table. """
-    result = conn.exec_sproc(prep_sproc)
-    count = result.fetchone()[0]
-    if count == 0:
-        return True
-    else:
-        raise Exception(f"ERROR: Table {table} was not truncated.")
-
-
 def delete_data_files(directory):
     """ Delete data files (not everything) from the given directory """
     for file in os.listdir(directory):
@@ -103,27 +93,34 @@ def download_from_ftp(ftp):
 def process_application_data(conn, file, school_year):
     """ Take application data from csv and insert into table """
     df = read_csv_to_df(f"{LOCALDIR}/{file}")
-    prep_sproc = f"{os.getenv('SPROC_RAW_PREP')} {school_year}"
-    if backup_and_truncate_table(conn, prep_sproc):
-        table = os.getenv("DB_RAW_TABLE")
+    result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_PREP')} {school_year}")
+    count = result.fetchone()[0]
+    table = os.getenv("DB_RAW_TABLE")
+    if count == 0:
         conn.insert_into(table, df)
         result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_POST')} {school_year}")
         result_set = result.fetchone()
         logging.info(f"Loaded {result_set[1]} rows into backup table '{table}_backup'.")
         logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
+    else:
+        raise Exception(f"ERROR: Table {table} was not truncated.")
 
 
 def process_application_data_index(conn, file, school_year):
     """ Take application data index from csv and insert into table """
     df = read_csv_to_df(f"{LOCALDIR}/{file}")
-    prep_sproc = f"{os.getenv('SPROC_RAW_INDEX_PREP')} {school_year}"
-    if backup_and_truncate_table(conn, prep_sproc):
-        table = os.getenv("DB_RAW_INDEX_TABLE")
+    result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_INDEX_PREP')} {school_year}")
+    count = result.fetchone()[0]
+    table = os.getenv("DB_RAW_INDEX_TABLE")
+    if count == 0:
         conn.insert_into(table, df)
         result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_INDEX_POST')} {school_year}")
         result_set = result.fetchone()
         logging.info(f"Loaded {result_set[1]} rows into backup table '{table}_backup'.")
         logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
+    else:
+        raise Exception(f"ERROR: Table {table} was not truncated.")
+
 
 
 def process_change_tracking(conn):

@@ -25,7 +25,7 @@ class API:
         if response.ok:
             j_data = json.loads(response.content.decode())
             logging.info(
-                "API Token: " + api_token + " - Status: " + str(j_data["status"]) + "\n"
+                "API Token: " + api_token + " - Status: " + str(j_data["status"])
             )
         else:
             j_data = json.loads(response.content.decode())
@@ -35,7 +35,7 @@ class API:
                 + " - Error Code: "
                 + str(j_data["error_code"])
             )
-            logging.info("Error Message: " + j_data["error_msg"] + "\n")
+            logging.info("Error Message: " + j_data["error_msg"])
             response.raise_for_status()
 
     def request_reports(self):

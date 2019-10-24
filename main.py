@@ -139,8 +139,12 @@ def main():
         mailer = Mailer()
         ftp = FTP()
 
-		#Load Database from DataFrame
-		RawIndexRowCT, RawIndexBackupRowCT = insert_into_table(df, Schema,RawIndexTable,prepare_index_sproc,post_process_index_sproc)
+        ftp.archive_remote_files(SOURCEDIR)
+        ftp.delete_old_archive_files(SOURCEDIR)
+        API().request_reports()
+        if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
+            delete_data_files(LOCALDIR)
+        app_file, app_index_file = download_from_ftp(ftp)
 
         process_application_data(conn, schema, app_file, school_year)
         process_application_data_index(conn, schema, app_index_file, school_year)

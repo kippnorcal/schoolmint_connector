@@ -91,7 +91,7 @@ def download_from_ftp(ftp):
     return app_file, app_index_file
 
 
-def process_application_data(conn, schema, file, school_year):
+def process_application_data(conn, file, school_year):
     """ Take application data from csv and insert into table """
     df = read_csv_to_df(f"{LOCALDIR}/{file}")
     prep_sproc = f"{os.getenv('SPROC_RAW_PREP')} {school_year}"
@@ -104,7 +104,7 @@ def process_application_data(conn, schema, file, school_year):
         logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
 
 
-def process_application_data_index(conn, schema, file, school_year):
+def process_application_data_index(conn, file, school_year):
     """ Take application data index from csv and insert into table """
     df = read_csv_to_df(f"{LOCALDIR}/{file}")
     prep_sproc = f"{os.getenv('SPROC_RAW_INDEX_PREP')} {school_year}"
@@ -133,7 +133,6 @@ def process_fact_daily_status(conn):
 
 def main():
     try:
-        schema = os.getenv("DB_SCHEMA")
         school_year = os.getenv("CURRENT_SCHOOL_YEAR")
         conn = MSSQL()
         mailer = Mailer()
@@ -146,8 +145,8 @@ def main():
             delete_data_files(LOCALDIR)
         app_file, app_index_file = download_from_ftp(ftp)
 
-        process_application_data(conn, schema, app_file, school_year)
-        process_application_data_index(conn, schema, app_index_file, school_year)
+        process_application_data(conn, app_file, school_year)
+        process_application_data_index(conn, app_index_file, school_year)
 
 		#Create FactDailyStatus Rows
 		ChangeFactDailyStatusInsertedRowCT=process_FactDailyStatus()

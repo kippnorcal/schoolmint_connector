@@ -1,36 +1,25 @@
+from os import getenv
 import argparse
-import datetime as dt
-import glob
-import logging
 import os
-import sys
-import time
-import traceback
-
 import pandas as pd
 from sqlsorcery import MSSQL
+from mailer import Mailer
+import logging
+import sys
+import downloadftp
 from tenacity import *
+import traceback
+import datetime 
+import time
 
 from api import API
-from ftp import FTP
-from mailer import Mailer
-
-LOCALDIR = "files"
-SOURCEDIR = "schoolmint"
 
 logging.basicConfig(
-    handlers=[
-        logging.FileHandler(filename="app.log", mode="w+"),
-        logging.StreamHandler(sys.stdout),
-    ],
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s: %(message)s",
-    datefmt="%Y-%m-%d %I:%M:%S%p %Z",
+	handlers = [logging.FileHandler(filename="app.log",mode='w+'), logging.StreamHandler(sys.stdout)],
+	level=logging.INFO,
+	format="%(asctime)s | %(levelname)s: %(message)s",
+	datefmt="%Y-%m-%d %I:%M:%S%p %Z",
 )
-
-# Quiet the logging from pysftp
-logging.getLogger("paramiko").setLevel(logging.ERROR)
-
 
 def read_logs(filename):
     """ Read the given file """
@@ -150,25 +139,23 @@ def main():
         mailer = Mailer()
         ftp = FTP()
 
-        ftp.archive_remote_files(SOURCEDIR)
-        API().request_reports()
-        if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
-            delete_data_files(LOCALDIR)
-        app_file, app_index_file = download_from_ftp(ftp)
+		#Load Database from DataFrame
+		RawIndexRowCT, RawIndexBackupRowCT = insert_into_table(df, Schema,RawIndexTable,prepare_index_sproc,post_process_index_sproc)
 
         process_application_data(conn, schema, app_file, school_year)
         process_application_data_index(conn, schema, app_index_file, school_year)
 
-        process_change_tracking(conn)
-        process_fact_daily_status(conn)
+		#Create FactDailyStatus Rows
+		ChangeFactDailyStatusInsertedRowCT=process_FactDailyStatus()
 
-        success_message = read_logs("app.log")
-        mailer.notify(results=success_message)
-    except Exception as e:
-        logging.exception(e)
-        stack_trace = traceback.format_exc()
-        mailer.notify(success=False, error_message=stack_trace)
+		#Send Success Message
+		success_message = read_logs("app.log")
+		mailer.notify(results=success_message)
 
+	except Exception as e:
+		logging.exception(e)
+		stack_trace = traceback.format_exc()
+		mailer.notify(success=False, error_message=stack_trace)
 
 if __name__ == "__main__":
-    main()
+	main()

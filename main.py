@@ -63,37 +63,6 @@ def backup_and_truncate_table(conn, prep_sproc):
         raise Exception(f"ERROR: Table {table} was not truncated.")
 
 
-def get_records_count(conn, schema, table):
-    """ Count the number of records in a given table. """
-    result = conn.query(f"SELECT COUNT(1) records FROM {schema}.{table};")
-    count = result["records"].values[0]
-    return count
-
-
-def load_from_backup_table(conn, schema, table):
-    """
-    Load data from backup table to primary table,
-    only when there was an issue loading the csv into the primary table.
-    """
-    sql_insert = f"INSERT INTO {schema}.{table} SELECT * FROM {schema}.{table}_backup;"
-    result = conn.query(sql_insert)
-    count = get_records_count(conn, schema, table)
-    raise Exception(
-        f"ERROR: No rows loaded into {table}. {count} records reverted from backup table."
-    )
-
-
-def check_table_load(conn, schema, table):
-    """ Ensure data was loaded successfully into the primary table. """
-    count = get_records_count(conn, schema, table)
-    if count == 0:
-        load_from_backup_table(conn, schema, table)
-    else:
-        backup_count = get_records_count(conn, schema, f"{table}_backup")
-        logging.info(f"Loaded {backup_count} rows into backup table '{table}_backup'.")
-        logging.info(f"Loaded {count} rows into table '{table}''.")
-
-
 def delete_data_files(directory):
     """ Delete data files (not everything) from the given directory """
     for file in os.listdir(directory):
@@ -133,24 +102,30 @@ def download_from_ftp(ftp):
     return app_file, app_index_file
 
 
-def process_application_data(conn, schema, file):
+def process_application_data(conn, schema, file, school_year):
     """ Take application data from csv and insert into table """
     df = read_csv_to_df(f"{LOCALDIR}/{file}")
-    if backup_and_truncate_table(conn, os.getenv("SPROC_RAW_PREP")):
+    prep_sproc = f"{os.getenv('SPROC_RAW_PREP')} {school_year}"
+    if backup_and_truncate_table(conn, prep_sproc):
         table = os.getenv("DB_RAW_TABLE")
         conn.insert_into(table, df)
-        check_table_load(conn, schema, table)
-        conn.exec_sproc(os.getenv("SPROC_RAW_POST"))
+        result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_POST')} {school_year}")
+        result_set = result.fetchone()
+        logging.info(f"Loaded {result_set[1]} rows into backup table '{table}_backup'.")
+        logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
 
 
-def process_application_data_index(conn, schema, file):
+def process_application_data_index(conn, schema, file, school_year):
     """ Take application data index from csv and insert into table """
     df = read_csv_to_df(f"{LOCALDIR}/{file}")
-    if backup_and_truncate_table(conn, os.getenv("SPROC_RAW_INDEX_PREP")):
+    prep_sproc = f"{os.getenv('SPROC_RAW_INDEX_PREP')} {school_year}"
+    if backup_and_truncate_table(conn, prep_sproc):
         table = os.getenv("DB_RAW_INDEX_TABLE")
         conn.insert_into(table, df)
-        check_table_load(conn, schema, table)
-        conn.exec_sproc(os.getenv("SPROC_RAW_INDEX_POST"))
+        result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_INDEX_POST')} {school_year}")
+        result_set = result.fetchone()
+        logging.info(f"Loaded {result_set[1]} rows into backup table '{table}_backup'.")
+        logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
 
 
 def process_change_tracking(conn):
@@ -170,6 +145,7 @@ def process_fact_daily_status(conn):
 def main():
     try:
         schema = os.getenv("DB_SCHEMA")
+        school_year = os.getenv("CURRENT_SCHOOL_YEAR")
         conn = MSSQL()
         mailer = Mailer()
         ftp = FTP()
@@ -180,8 +156,8 @@ def main():
             delete_data_files(LOCALDIR)
         app_file, app_index_file = download_from_ftp(ftp)
 
-        process_application_data(conn, schema, app_file)
-        process_application_data_index(conn, schema, app_index_file)
+        process_application_data(conn, schema, app_file, school_year)
+        process_application_data_index(conn, schema, app_index_file, school_year)
 
         process_change_tracking(conn)
         process_fact_daily_status(conn)

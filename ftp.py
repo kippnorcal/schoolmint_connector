@@ -1,6 +1,8 @@
 import os
 import datetime as dt
 import sys
+import time
+
 import pysftp
 
 
@@ -18,8 +20,13 @@ class FTP:
         )
 
     def download_dir(self, remotedir, localdir):
-        """ Download all files from the remote directory to the local directory """
-        self.ftpsrv.get_d(remotedir, localdir, preserve_mtime=True)
+        """ Download all files from the remote directory to the local directory
+
+        There should be 3 items in the remote server when both files are downloaded,
+        including the archive folder. """
+        if len(self.ftpsrv.listdir(remotepath=remotedir)) >= 3:
+            time.sleep(30)  # wait to allow the files to finish uploading
+            self.ftpsrv.get_d(remotedir, localdir, preserve_mtime=True)
 
     def _archive_file(self, file):
         """ Place the file in an 'archive' folder within its directory """

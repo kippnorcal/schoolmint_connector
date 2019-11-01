@@ -6,8 +6,8 @@ import pysftp
 
 class FTP:
     def __init__(self):
-        FTP_HOST = os.getenv("FTP_Hostname")
-        FTP_USER = os.getenv("FTP_Username")
+        FTP_HOST = os.getenv("FTP_HOSTNAME")
+        FTP_USER = os.getenv("FTP_USERNAME")
         FTP_PWD = os.getenv("FTP_PWD")
         self.ARCHIVE_MAX_DAYS = int(os.getenv("ARCHIVE_MAX_DAYS"))
 

@@ -8,9 +8,9 @@ Welcome to Schoolmint Connector's documentation!
 An ETL job that gets SchoolMint application data and loads it into a database.
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
-    readme
+    Getting Started <readme.rst>
 
 Links
 ------------------------

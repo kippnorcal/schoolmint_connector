@@ -2,7 +2,7 @@ Creating the SchoolMint Reports
 *********************************
 
 In the SchoolMint application, for each enrollment period that you want to report on, 
-create two reports: 'Application Data Raw' and 'Application Data Index'.
+create two reports: 'Automated Application Data Raw XX-XX' and 'Automated Application Data Index XX-XX'.
 
 1. Select the enrollment period.
 2. Click on the *Reports* menu.
@@ -20,10 +20,14 @@ create two reports: 'Application Data Raw' and 'Application Data Index'.
 Use the toolbar on the left to search for fields. 
 Drag and drop them into the report.
 
+:download:`Download sample Automated Application Data Raw file <Automated_Application_Data_Raw_20-21-example.csv>` 
+
+:download:`Download sample Automated Application Data Index file <Automated_Application_Data_Index_20-21-example.csv>` 
+
 .. image:: _static/schoolmint_create_report3.png
 
-8. Once you have created both reports, contact SchoolMint 
-support to get the API keys for the reports.
+8. Once you have created both reports, contact SchoolMint support to get the API keys for the reports.
+9. You get one token per report, and these will go in your .env file.
 
 Columns for Application Data Raw:
 

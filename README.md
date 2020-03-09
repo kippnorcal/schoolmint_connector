@@ -1,0 +1,1 @@
+Open the file schoolmint_connector/docs/build/html/index.html to view the documentation.

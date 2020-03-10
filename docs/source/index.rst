@@ -17,4 +17,5 @@ Links
 .. toctree::
     
     Reference <reference.rst>
+    genindex
     Source Code on Github <https://github.com/kipp-bayarea/schoolmint_connector>

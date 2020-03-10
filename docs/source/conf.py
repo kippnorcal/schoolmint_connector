@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 # -- Project information -----------------------------------------------------
 
 project = "Schoolmint Connector"
-copyright = "2019, KIPP Bay Area Public Schools"
+copyright = "2020, KIPP Bay Area Public Schools"
 author = "KIPP Bay Area Public Schools"
 
 # The full version, including alpha/beta/rc tags

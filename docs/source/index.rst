@@ -11,11 +11,12 @@ An ETL job that gets SchoolMint application data and loads it into a database.
     :maxdepth: 2
 
     Getting Started <readme.rst>
+    Schema <schema.rst>
 
 Links
 ------------------------
 .. toctree::
     
-    Reference <reference.rst>
+    reference
     genindex
     Source Code on Github <https://github.com/kipp-bayarea/schoolmint_connector>

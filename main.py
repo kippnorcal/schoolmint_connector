@@ -31,13 +31,27 @@ logging.getLogger("paramiko").setLevel(logging.ERROR)
 
 
 def read_logs(filename):
-    """ Read the given file """
+    """
+    Read the given file.
+    
+    :param filename: Name of the file to be read (in this case, the logs)
+    :type filename: String
+    :return: Contents of the file
+    :rtype: String
+    """
     with open(filename) as f:
         return f.read()
 
 
 def read_csv_to_df(csv):
-    """ Read the csv into a dataframe in preparation for database load """
+    """
+    Read the csv into a dataframe in preparation for database load.
+    
+    :param csv: Name of the csv file to be read into a DataFrame
+    :type csv: String
+    :return: Contents of the csv file
+    :rtype: DataFrame
+    """
     if not os.path.isfile(csv):
         raise Exception(
             f"ERROR: '{csv}' file does not exist. Most likely problem downloading from sFTP."
@@ -52,15 +66,27 @@ def read_csv_to_df(csv):
 
 
 def delete_data_files(directory):
-    """ Delete data files (not everything) from the given directory """
+    """
+    Delete data files (not everything) from the given directory.
+
+    :param directory: Directory that we want to delete data files from
+    :type directory: String
+    """
     for file in os.listdir(directory):
         if "Data" in file:
             os.remove(os.path.join(directory, file))
 
 
 def get_latest_file(filename):
-    """ Get the file that matches the given name.
-    Reverse sort by modification date in case there are multiple. """
+    """
+    Get the file that matches the given name.
+    Reverse sort by modification date in case there are multiple.
+    
+    :param filename: Name of the file that we're looking for
+    :type filename: String
+    :return: Name of the most recently modified file with the given name
+    :rtype: String
+    """
     all_files = os.listdir(LOCALDIR)
     matched_files = [file for file in all_files if filename in file]
     files = sorted(
@@ -79,10 +105,14 @@ def get_latest_file(filename):
 @retry(wait=wait_fixed(30), stop=stop_after_attempt(60))
 def download_from_ftp(ftp):
     """
-    Download data files from FTP.
-    
-    It can take some time for SchoolMint to upload the reports after the API request,
-    so we use Tenacity retry to wait up to 30 min.
+    Download data files from FTP. It can take some time for SchoolMint 
+    to upload the reports after the API request, so we use Tenacity retry 
+    to wait up to 30 min.
+
+    :param ftp: FTP connection
+    :type ftp: Object
+    :return: Names of the files downloaded from the FTP
+    :rtype: Tuple (String, String)
     """
     ftp.download_dir(SOURCEDIR, LOCALDIR)
     app_file = get_latest_file("Automated Application Data Raw")
@@ -91,7 +121,16 @@ def download_from_ftp(ftp):
 
 
 def process_application_data(conn, file, school_year):
-    """ Take application data from csv and insert into table """
+    """
+    Take application data from csv and insert into table.
+    
+    :param conn: Database connection
+    :type conn: Object
+    :param file: Name of the Application Data file
+    :type file: String
+    :param school_year: 4 digit school year
+    :type school_year: String
+    """
     df = read_csv_to_df(f"{LOCALDIR}/{file}")
     result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_PREP')} {school_year}")
     count = result.fetchone()[0]
@@ -107,7 +146,15 @@ def process_application_data(conn, file, school_year):
 
 
 def process_application_data_index(conn, file, school_year):
-    """ Take application data index from csv and insert into table """
+    """Take application data index from csv and insert into table.
+    
+    :param conn: Database connection
+    :type conn: Object
+    :param file: Name of the Application Data Index file
+    :type file: String
+    :param school_year: 4 digit school year
+    :type school_year: String
+    """
     df = read_csv_to_df(f"{LOCALDIR}/{file}")
     result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_INDEX_PREP')} {school_year}")
     count = result.fetchone()[0]
@@ -122,16 +169,25 @@ def process_application_data_index(conn, file, school_year):
         raise Exception(f"ERROR: Table {table} was not truncated.")
 
 
-
 def process_change_tracking(conn):
-    """ Execute sproc to generate change history """
+    """
+    Execute sproc to generate change history.
+    
+    :param conn: Database connection
+    :type conn: Object
+    """
     result = conn.exec_sproc(os.getenv("SPROC_CHANGE_TRACK"))
     count = result.fetchone()[0]
     logging.info(f"Loaded {count} rows into Change History table.")
 
 
 def process_fact_daily_status(conn):
-    """ Execute sproc to generate fact daily status table """
+    """
+    Execute sproc to generate fact daily status table.
+    
+    :param conn: Database connection
+    :type conn: Object
+    """
     result = conn.exec_sproc(os.getenv("SPROC_FACT_DAILY"))
     count = result.fetchone()[0]
     logging.info(f"Loaded {count} rows into Fact Daily Status table.")

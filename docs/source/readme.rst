@@ -7,6 +7,7 @@ Prerequisites
 .. toctree::
 
     schoolmint_setup
+    schema_setup
 
 Dependencies
 =============

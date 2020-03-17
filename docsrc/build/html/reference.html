@@ -1,0 +1,503 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Reference &mdash; Schoolmint Connector 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Index" href="genindex.html" />
+    <link rel="prev" title="Initial environment setup" href="environment_setup.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Schoolmint Connector
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">Getting Started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/kipp-bayarea/schoolmint_connector">Source Code on Github</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Schoolmint Connector</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/reference.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="reference">
+<span id="id1"></span><h1>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-api"></span><dl class="class">
+<dt id="api.API">
+<em class="property">class </em><code class="sig-prename descclassname">api.</code><code class="sig-name descname">API</code><a class="headerlink" href="#api.API" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for the SchoolMint API connection.</p>
+<dl class="method">
+<dt id="api.API._post_demand_export">
+<code class="sig-name descname">_post_demand_export</code><span class="sig-paren">(</span><em class="sig-param">api_token</em><span class="sig-paren">)</span><a class="headerlink" href="#api.API._post_demand_export" title="Permalink to this definition">¶</a></dt>
+<dd><p>Post request to SchoolMint API. This triggers report generation 
+and upload to FTP associated with the report.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>api_token</strong> (<em>String</em>) – API token for the report.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="api.API.request_reports">
+<code class="sig-name descname">request_reports</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#api.API.request_reports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Demand export for each API token.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-ftp"></span><dl class="class">
+<dt id="ftp.FTP">
+<em class="property">class </em><code class="sig-prename descclassname">ftp.</code><code class="sig-name descname">FTP</code><a class="headerlink" href="#ftp.FTP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for the local FTP connection.</p>
+<dl class="method">
+<dt id="ftp.FTP._archive_file">
+<code class="sig-name descname">_archive_file</code><span class="sig-paren">(</span><em class="sig-param">file</em><span class="sig-paren">)</span><a class="headerlink" href="#ftp.FTP._archive_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Place the file in an ‘archive’ folder within its directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>String</em>) – Path and name of the file that will be archived.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ftp.FTP._delete_old_file">
+<code class="sig-name descname">_delete_old_file</code><span class="sig-paren">(</span><em class="sig-param">file</em><span class="sig-paren">)</span><a class="headerlink" href="#ftp.FTP._delete_old_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the age limit based on the env variable and delete files older than this limit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>String</em>) – Path and name of the file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ftp.FTP._do_nothing">
+<code class="sig-name descname">_do_nothing</code><span class="sig-paren">(</span><em class="sig-param">file</em><span class="sig-paren">)</span><a class="headerlink" href="#ftp.FTP._do_nothing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used for files and unknown file types.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>String</em>) – Path and name of the file that will be ignored.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ftp.FTP.archive_remote_files">
+<code class="sig-name descname">archive_remote_files</code><span class="sig-paren">(</span><em class="sig-param">remotedir</em><span class="sig-paren">)</span><a class="headerlink" href="#ftp.FTP.archive_remote_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Archive all of the files in the specified remote directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>remotedir</strong> (<em>String</em>) – Path of the remote directory (ie. the FTP directory)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ftp.FTP.delete_old_archive_files">
+<code class="sig-name descname">delete_old_archive_files</code><span class="sig-paren">(</span><em class="sig-param">remotedir</em><span class="sig-paren">)</span><a class="headerlink" href="#ftp.FTP.delete_old_archive_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete old files from the archive folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>remotedir</strong> (<em>String</em>) – Path of the remote directory (ie. the FTP directory)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ftp.FTP.download_dir">
+<code class="sig-name descname">download_dir</code><span class="sig-paren">(</span><em class="sig-param">remotedir</em>, <em class="sig-param">localdir</em><span class="sig-paren">)</span><a class="headerlink" href="#ftp.FTP.download_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download all files from the remote directory to the local directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>remotedir</strong> (<em>String</em>) – Path of the remote directory that we are getting files from (ie. the FTP directory)</p></li>
+<li><p><strong>localdir</strong> (<em>String</em>) – Path of the local directory that we are saving files to</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-mailer"></span><dl class="class">
+<dt id="mailer.Mailer">
+<em class="property">class </em><code class="sig-prename descclassname">mailer.</code><code class="sig-name descname">Mailer</code><a class="headerlink" href="#mailer.Mailer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to send email notifications about the job status.</p>
+<dl class="method">
+<dt id="mailer.Mailer._body_text">
+<code class="sig-name descname">_body_text</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mailer.Mailer._body_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate email body message based on job status.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Email body with results or error message</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>String</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mailer.Mailer._message">
+<code class="sig-name descname">_message</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mailer.Mailer._message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the email message body.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Message text</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>MIMEText object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mailer.Mailer._subject_line">
+<code class="sig-name descname">_subject_line</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mailer.Mailer._subject_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return success/error in subject based on job status.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Job name and success/error status</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>String</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mailer.Mailer.notify">
+<code class="sig-name descname">notify</code><span class="sig-paren">(</span><em class="sig-param">results=None</em>, <em class="sig-param">success=True</em>, <em class="sig-param">error_message=None</em><span class="sig-paren">)</span><a class="headerlink" href="#mailer.Mailer.notify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send the notification message.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>results</strong> (<em>String</em>) – contains the logger messages</p></li>
+<li><p><strong>success</strong> (<em>Boolean</em>) – True if the job was successful, False if there was an error</p></li>
+<li><p><strong>error_message</strong> (<em>String</em>) – contains stack trace if there is one</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-main"></span><dl class="function">
+<dt id="main.delete_data_files">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">delete_data_files</code><span class="sig-paren">(</span><em class="sig-param">directory</em><span class="sig-paren">)</span><a class="headerlink" href="#main.delete_data_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete data files (not everything) from the given directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>directory</strong> (<em>String</em>) – Directory that we want to delete data files from</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.download_from_ftp">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">download_from_ftp</code><span class="sig-paren">(</span><em class="sig-param">ftp</em><span class="sig-paren">)</span><a class="headerlink" href="#main.download_from_ftp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download data files from FTP. It can take some time for SchoolMint 
+to upload the reports after the API request, so we use Tenacity retry 
+to wait up to 30 min.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ftp</strong> (<em>Object</em>) – FTP connection</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Names of the files downloaded from the FTP</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple (String, String)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.get_latest_file">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">get_latest_file</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#main.get_latest_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the file that matches the given name.
+Reverse sort by modification date in case there are multiple.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>String</em>) – Name of the file that we’re looking for</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Name of the most recently modified file with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>String</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.process_application_data">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">process_application_data</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">file</em>, <em class="sig-param">school_year</em><span class="sig-paren">)</span><a class="headerlink" href="#main.process_application_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take application data from csv and insert into table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>conn</strong> (<em>Object</em>) – Database connection</p></li>
+<li><p><strong>file</strong> (<em>String</em>) – Name of the Application Data file</p></li>
+<li><p><strong>school_year</strong> (<em>String</em>) – 4 digit school year</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.process_application_data_index">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">process_application_data_index</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">file</em>, <em class="sig-param">school_year</em><span class="sig-paren">)</span><a class="headerlink" href="#main.process_application_data_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take application data index from csv and insert into table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>conn</strong> (<em>Object</em>) – Database connection</p></li>
+<li><p><strong>file</strong> (<em>String</em>) – Name of the Application Data Index file</p></li>
+<li><p><strong>school_year</strong> (<em>String</em>) – 4 digit school year</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.process_change_tracking">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">process_change_tracking</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="headerlink" href="#main.process_change_tracking" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute sproc to generate change history.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>conn</strong> (<em>Object</em>) – Database connection</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.process_fact_daily_status">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">process_fact_daily_status</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="headerlink" href="#main.process_fact_daily_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute sproc to generate fact daily status table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>conn</strong> (<em>Object</em>) – Database connection</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.read_csv_to_df">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">read_csv_to_df</code><span class="sig-paren">(</span><em class="sig-param">csv</em><span class="sig-paren">)</span><a class="headerlink" href="#main.read_csv_to_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the csv into a dataframe in preparation for database load.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>csv</strong> (<em>String</em>) – Name of the csv file to be read into a DataFrame</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Contents of the csv file</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.read_logs">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">read_logs</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#main.read_logs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the given file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>String</em>) – Name of the file to be read (in this case, the logs)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Contents of the file</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>String</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="genindex.html" class="btn btn-neutral float-right" title="Index" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="environment_setup.html" class="btn btn-neutral float-left" title="Initial environment setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, KIPP Bay Area Public Schools
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

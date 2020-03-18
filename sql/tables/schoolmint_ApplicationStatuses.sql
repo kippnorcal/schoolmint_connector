@@ -2,6 +2,8 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+SET ANSI_PADDING ON
+GO
 CREATE TABLE [custom].[schoolmint_ApplicationStatuses](
 	[StatusID] [int] NOT NULL,
 	[Status] [varchar](2) NOT NULL,
@@ -12,4 +14,7 @@ CREATE TABLE [custom].[schoolmint_ApplicationStatuses](
 	[Registration] [bit] NULL,
 	[Rank] [int] NULL
 ) ON [PRIMARY]
+
+GO
+SET ANSI_PADDING OFF
 GO

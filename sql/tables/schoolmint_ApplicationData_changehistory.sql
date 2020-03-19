@@ -2,6 +2,8 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
+SET ANSI_PADDING ON
+GO
 CREATE TABLE [custom].[schoolmint_ApplicationData_changehistory](
 	[Application_ID] [varchar](500) NULL,
 	[SM_Student_ID] [varchar](500) NULL,
@@ -24,9 +26,10 @@ CREATE TABLE [custom].[schoolmint_ApplicationData_changehistory](
 	[Last_Update_Date_Previous] [varchar](500) NULL,
 	[Last_Status_Change_Previous] [varchar](500) NULL,
 	[ChangeTracking] [varchar](500) NULL,
-	[ChangeTrackingDate] [datetime] NOT NULL,
+	[ChangeTrackingDate] [datetime] NOT NULL CONSTRAINT [DF_schoolmint_ApplicationData__changehistory_ChangeTrackingDate]  DEFAULT (getdate()),
 	[SchoolYear4Digit] [int] NULL
 ) ON [PRIMARY]
+
 GO
-ALTER TABLE [custom].[schoolmint_ApplicationData_changehistory] ADD  CONSTRAINT [DF_schoolmint_ApplicationData_changehistory_ChangeTrackingDate]  DEFAULT (getdate()) FOR [ChangeTrackingDate]
+SET ANSI_PADDING OFF
 GO

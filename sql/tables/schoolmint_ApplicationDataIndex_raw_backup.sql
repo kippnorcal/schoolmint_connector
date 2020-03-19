@@ -4,7 +4,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_PADDING ON
 GO
-CREATE TABLE [custom].[schoolmint_ApplicationDataIndex_raw](
+CREATE TABLE [custom].[schoolmint_ApplicationDataIndex_raw_backup](
 	[applicant_id] [varchar](500) NULL,
 	[account_id] [varchar](500) NULL,
 	[student_id] [varchar](500) NULL,

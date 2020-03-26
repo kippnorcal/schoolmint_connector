@@ -9,5 +9,4 @@ RUN pip install pipenv
 COPY Pipfile .
 RUN pipenv install --skip-lock
 COPY ./ .
-CMD ["pipenv", "run", "python", "main.py"]
-# CMD ["pipenv", "run", "python", "mssql_setup.py"]
+ENTRYPOINT ["pipenv", "run", "python", "main.py"]

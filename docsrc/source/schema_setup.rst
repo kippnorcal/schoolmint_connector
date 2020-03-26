@@ -4,7 +4,26 @@ Schema
 Schema Setup
 #############
 
-The following database objects are necessary to run the Python code. Refer to the sql folder for the DDL.
+Automatic Setup
+~~~~~~~~~~~~~~~~
+
+Navigate to sql/mssql, and set up a locally hosted MSSQL database in Docker for development:
+
+.. code-block:: bash
+
+    $ docker-compose up -d
+
+Connect to the database in your favorite database IDE, and create your Database and Schema. Update your .env file to match.
+
+Navigate to the main project folder, and create the database objects automatically in the database:
+
+.. code-block:: bash
+
+    $ docker build -t schoolmint .
+    $ docker run -it --network host schoolmint --mssql
+
+
+After the code is finished running, you should have the following tables, views, and sprocs:
 
 Tables
 ~~~~~~~
@@ -20,6 +39,15 @@ Tables
 * Schoolmint_Progressmonitoring
 * SchoolMint_SchoolCodes
 
+Views
+~~~~~~
+* vw_SchoolMint_AppStatusList
+* vw_SchoolMint_FactDailyStatus_InterimTargets
+* vw_Schoolmint_FactDailyStatus
+* vw_Schoolmint_FactProgressMonitoring
+* vw_Schoolmint_Index_Demographics
+* vw_SchoolMint_ProgressMonitoring
+
 Stored Procedures
 ~~~~~~~~~~~~~~~~~~
 
@@ -30,9 +58,17 @@ Stored Procedures
 * sproc_SchoolMint_Raw_PrepareTables
 * sproc_SchoolMint_Raw_PostProcess
 
+Lookup Tables
+##############
 
-ERD
-####
+The following lookup tables need to be populated:
+
+* **SchoolMint_lk_Enrollment**: Load the data from sql/data/lk_enrollment.csv into this table.
+* **Schoolmint_Progressmonitoring**: Refer to the template (provided separately).
+* **SchoolMint_SchoolCodes**: Load the data from sql/data/application_statuses.csv into this table.
+
+Final ERD
+##########
 
 `View ERD on LucidChart <https://www.lucidchart.com/invitations/accept/47fd9583-9736-4174-983a-ec526ec2851c>`_
 

@@ -1,5 +1,6 @@
 import os
 
+import pandas as pd
 from sqlsorcery import MSSQL
 from sqlalchemy.exc import ProgrammingError
 
@@ -23,6 +24,13 @@ def main():
         sql.exec_cmd_from_file("sql/tables/schoolmint_lk_Enrollment.sql")
         sql.exec_cmd_from_file("sql/tables/schoolmint_ProgressMonitoring.sql")
         sql.exec_cmd_from_file("sql/tables/schoolmint_SchoolCodes.sql")
+
+        # Load lookup tables
+        enrollments = pd.read_csv("sql/data/lk_enrollment.csv")
+        sql.insert_into("schoolmint_lk_Enrollment", enrollments)
+
+        application_statuses = pd.read_csv("sql/data/application_statuses.csv")
+        sql.insert_into("schoolmint_ApplicationStatuses", application_statuses)
 
         # Views
         sql.exec_cmd_from_file("sql/views/vw_schoolmint_AppStatusList.sql")

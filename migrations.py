@@ -5,7 +5,7 @@ from sqlsorcery import MSSQL
 from sqlalchemy.exc import ProgrammingError
 
 
-def main():
+def migrate_mssql():
     try:
         sql = MSSQL()
 
@@ -55,7 +55,3 @@ def main():
     except ProgrammingError as e:
         if "Cannot open database" in str(e):
             print("ERROR: First create your database and schema manually")
-
-
-if __name__ == "__main__":
-    main()

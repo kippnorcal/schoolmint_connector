@@ -14,6 +14,7 @@ from tenacity import *
 from api import API
 from ftp import FTP
 from mailer import Mailer
+from migrations import migrate_mssql
 
 LOCALDIR = "files"
 SOURCEDIR = "schoolmint"
@@ -28,6 +29,11 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %I:%M:%S%p %Z",
 )
 logging.getLogger("paramiko").setLevel(logging.ERROR)
+
+parser = argparse.ArgumentParser(description="Additional migration options")
+parser.add_argument("--mssql", help="Run migrations for MS SQL", action="store_true")
+args = parser.parse_args()
+MSSQL_SETUP = args.mssql
 
 
 def read_logs(filename):
@@ -224,4 +230,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if MSSQL_SETUP:
+        migrate_mssql()
+    else:
+        main()

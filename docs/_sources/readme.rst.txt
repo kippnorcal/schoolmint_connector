@@ -7,7 +7,6 @@ Prerequisites
 .. toctree::
 
     schoolmint_setup
-    schema_setup
 
 Dependencies
 =============
@@ -26,6 +25,7 @@ Environment
 .. toctree::
 
     environment_setup
+    schema_setup
 
 Running the job
 ================

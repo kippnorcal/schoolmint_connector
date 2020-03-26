@@ -71,12 +71,12 @@ LEFT JOIN [custom].schoolmint_applicationdata_raw_backup back1
 LEFT JOIN [custom].schoolmint_lk_Enrollment lk 
    ON raw1.Enrollment_Period = lk.Enrollment_Period_id
 WHERE (
-      raw1.[Application_Status] <> isnull(back1.[Application_Status], 999999)
-   OR raw1.[Last_Update_Date] <> isnull(back1.[Last_Update_Date], '1970-01-01')
-   OR raw1.[Last_Status_Change] <> isnull(back1.[Last_Status_Change], 999999)
+      raw1.[Application_Status] <> ISNULL(back1.[Application_Status], 999999)
+   OR raw1.[Last_Update_Date] <> ISNULL(back1.[Last_Update_Date], '1970-01-01')
+   OR raw1.[Last_Status_Change] <> ISNULL(back1.[Last_Status_Change], 999999)
 )
 /* Ensure only processing current year */
-AND raw1.SchoolYear4Digit = (SELECT max(schoolyear4digit) FROM [custom].schoolmint_applicationdata_raw)
+AND raw1.SchoolYear4Digit = (SELECT MAX(schoolyear4digit) FROM [custom].schoolmint_applicationdata_raw)
 /* Ensure no duplicates */
 AND NOT EXISTS (SELECT 1 FROM [custom].[schoolmint_ApplicationData_changehistory] hist WHERE hist.Application_ID=raw1.Application_ID and hist.Last_Status_Change=raw1.Last_Status_Change)
 

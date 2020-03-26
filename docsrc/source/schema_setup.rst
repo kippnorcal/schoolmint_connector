@@ -65,7 +65,8 @@ The following lookup tables need to be populated:
 
 * **SchoolMint_lk_Enrollment**: Load the data from sql/data/lk_enrollment.csv into this table.
 * **Schoolmint_Progressmonitoring**: Refer to the template (provided separately).
-* **SchoolMint_SchoolCodes**: Load the data from sql/data/application_statuses.csv into this table.
+* **schoolmint_ApplicationStatuses**: Load the data from sql/data/application_statuses.csv into this table.
+* **SchoolMint_SchoolCodes**: Load with the school ID mapping that you received from SchoolMint support.
 
 Final ERD
 ##########

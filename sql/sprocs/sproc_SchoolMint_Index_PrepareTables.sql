@@ -1,6 +1,4 @@
-CREATE PROC [custom].[sproc_SchoolMint_Index_PrepareTables] (@CurrentSchoolYear INT)
-AS
-
+CREATE PROC [custom].[sproc_schoolmint_Index_PrepareTables] (@CurrentSchoolYear INT) AS
 SET NOCOUNT ON
 /***************************************************************************
 Name: custom.sproc_SchoolMint_Index_PrepareTables
@@ -18,24 +16,24 @@ Comments:
 
 --If Index Table has data for the current year, then truncate backup table and load backup table from Raw. Otherwise, dont truncate Backup Table
 IF (
-		SELECT count(1)
+		SELECT COUNT(1)
 		FROM custom.schoolmint_ApplicationDataIndex_raw
-		WHERE SchoolYear4Digit=@CurrentSchoolYear 
-		) > 0
+		WHERE SchoolYear4Digit = @CurrentSchoolYear 
+	) > 0
 BEGIN
 	TRUNCATE TABLE custom.schoolmint_ApplicationDataIndex_raw_backup;
 
 	INSERT INTO custom.schoolmint_ApplicationDataIndex_raw_backup
 	SELECT *
 	FROM custom.schoolmint_ApplicationDataIndex_raw
-	WHERE SchoolYear4Digit=@CurrentSchoolYear;
+	WHERE SchoolYear4Digit = @CurrentSchoolYear;
 
-	DELETE FROM custom.schoolmint_ApplicationDataIndex_raw WHERE SchoolYear4Digit=@CurrentSchoolYear;
+	DELETE FROM custom.schoolmint_ApplicationDataIndex_raw 
+	WHERE SchoolYear4Digit = @CurrentSchoolYear;
 END
 
 
 
-SELECT count(1) ct
-FROM custom.schoolmint_ApplicationDataIndex_raw WHERE SchoolYear4Digit=@CurrentSchoolYear;
-
-go
+SELECT COUNT(1) ct
+FROM custom.schoolmint_ApplicationDataIndex_raw 
+WHERE SchoolYear4Digit = @CurrentSchoolYear;

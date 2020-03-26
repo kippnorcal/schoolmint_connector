@@ -1,4 +1,4 @@
-CREATE VIEW [custom].vw_Schoolmint_AppStatusList AS
+CREATE VIEW [custom].vw_schoolmint_AppStatusList AS
  /*********************************************************************
 Business Summary: Used for Student Recruitment report.
 
@@ -11,46 +11,47 @@ Comments:
 
 WITH AppStatusLong AS (
     SELECT School
-         , Systemschoolid   AS Schoolid
+         , Systemschoolid AS Schoolid
          , Schoolyear4digit AS Schoolyear4digitend
-         , Grade_Level      AS Gradelevel
-         , Goal_Type        AS Statusname
-         , Goal_Num         AS Countinstatus
-    FROM Custom.Schoolmint_Progressmonitoring
+         , Grade_Level AS Gradelevel
+         , Goal_Type AS Statusname
+         , Goal_Num AS Countinstatus
+    FROM custom.schoolmint_Progressmonitoring
     WHERE 1 = 1
       AND Goal_Type IN ('Budget_NumTargetStudents', 'Expected_NumReturnStudents')
 
     UNION ALL
-    SELECT                       Sc.School
-         ,                       Sc.Schoolid AS Schoolid
-         , Schoolyear4digitend = App.Schoolyear4digit
-         , Gradelevel          = App.Grade_Applying_To
-         , Statusname          = Sta.Statusname
-         , Countinstatus       = count(*)
-    FROM Custom.Schoolmint_Applicationdata_Raw App
-         INNER JOIN Custom.Schoolmint_Applicationstatuses Sta
-                        ON App.Application_Status = Sta.[Status]
-         INNER JOIN Custom.Schoolmint_Schoolcodes Sc
-                        ON Sc.Schoolmint_Schoolid = App.School_Applying_To OR Sc.School = App.School_Applying_To
+
+    SELECT                       
+           sc.School
+         , sc.Schoolid AS Schoolid
+         , app.Schoolyear4digit AS Schoolyear4digitend
+         , app.Grade_Applying_To AS Gradelevel
+         , sta.Statusname AS Statusname
+         , COUNT(*) AS Countinstatus
+    FROM custom.schoolmint_Applicationdata_Raw app
+    INNER JOIN Custom.Schoolmint_Applicationstatuses sta
+        ON app.Application_Status = sta.[Status]
+    INNER JOIN custom.Schoolmint_Schoolcodes sc
+        ON sc.Schoolmint_Schoolid = app.School_Applying_To 
+        OR sc.School = app.School_Applying_To
     GROUP BY Sc.School, Sc.Schoolid
-           , App.Schoolyear4digit
-           , App.Grade_Applying_To
-           , Sta.Statusname
+           , app.Schoolyear4digit
+           , app.Grade_Applying_To
+           , sta.Statusname
 )
+
 SELECT
-    stat.School
-    ,stat.Schoolid
+      stat.School
+    , stat.Schoolid
     , stat.Schoolyear4digitend
     , stat.Gradelevel
     , stat.Statusname
     , stat.Countinstatus
-    ,bug.Goal_Num AS Budget_NumTargetStudents
-
+    , bug.Goal_Num AS Budget_NumTargetStudents
 FROM AppStatusLong stat
-LEFT JOIN custom.Schoolmint_Progressmonitoring bug --Schoolmint_budgetandexpect_num bug
+LEFT JOIN custom.schoolmint_Progressmonitoring bug --Schoolmint_budgetandexpect_num bug
     ON stat.schoolid = bug.Systemschoolid
     AND stat.gradelevel = bug.Grade_Level
     AND stat.SchoolYear4DigitEnd = bug.Schoolyear4digit
     AND bug.Goal_Type = 'Budget_NumTargetStudents'
-go
-

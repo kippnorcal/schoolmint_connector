@@ -1,9 +1,3 @@
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-SET ANSI_PADDING ON
-GO
 CREATE TABLE [custom].[schoolmint_ApplicationDataIndex_raw_backup](
 	[applicant_id] [varchar](500) NULL,
 	[account_id] [varchar](500) NULL,
@@ -43,7 +37,3 @@ CREATE TABLE [custom].[schoolmint_ApplicationDataIndex_raw_backup](
 	[preferred_language] [varchar](500) NULL,
 	[SchoolYear4Digit] [int] NULL
 ) ON [PRIMARY]
-
-GO
-SET ANSI_PADDING OFF
-GO

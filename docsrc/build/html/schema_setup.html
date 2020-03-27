@@ -229,12 +229,19 @@ $ docker run -it --network host schoolmint --mssql
 <div class="section" id="lookup-tables">
 <h2>Lookup Tables<a class="headerlink" href="#lookup-tables" title="Permalink to this headline">¶</a></h2>
 <p>The following lookup tables need to be populated:</p>
+<ol class="arabic simple">
+<li><p><strong>schoolmint_lk_Enrollment</strong>: Load the data from sql/data/lk_enrollment.csv into this table.</p></li>
+<li><p><strong>schoolmint_Progressmonitoring</strong>: Refer to the template sql/data/progress_monitoring.csv for an example.</p>
 <ul class="simple">
-<li><p><strong>SchoolMint_lk_Enrollment</strong>: Load the data from sql/data/lk_enrollment.csv into this table.</p></li>
-<li><p><strong>Schoolmint_Progressmonitoring</strong>: Refer to the template (provided separately).</p></li>
-<li><p><strong>schoolmint_ApplicationStatuses</strong>: Load the data from sql/data/application_statuses.csv into this table.</p></li>
-<li><p><strong>SchoolMint_SchoolCodes</strong>: Load with the school ID mapping that you received from SchoolMint support.</p></li>
+<li><p><strong>Budget_NumTargetStudents</strong> (required): The expected number of students in seats on our Finance’s Census day, by grade level and school (as set by our finance team in conversation with SLs; we use 9/20 as our finance census date, but could differ by Region).</p></li>
+<li><p><strong>Expected_NumReturnStudents</strong> (required): The expected number of students returning each year, by grade-level and school.</p></li>
+<li><p><strong>App 1 - App Final</strong> (optional): Interim goals for number of applications submitted in SchoolMint.</p></li>
+<li><p><strong>Reg 1 - Reg Final</strong> (optional): Interim goals for number of applications in “registration complete” and “registration verified” status.</p></li>
 </ul>
+</li>
+<li><p><strong>schoolmint_ApplicationStatuses</strong>: Load the data from sql/data/application_statuses.csv into this table.</p></li>
+<li><p><strong>schoolmint_SchoolCodes</strong>: Load with the school ID mapping that you received from SchoolMint support. Refer to sql/data/school_codes.csv for an example.</p></li>
+</ol>
 </div>
 <div class="section" id="final-erd">
 <h2>Final ERD<a class="headerlink" href="#final-erd" title="Permalink to this headline">¶</a></h2>

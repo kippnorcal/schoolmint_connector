@@ -63,10 +63,16 @@ Lookup Tables
 
 The following lookup tables need to be populated:
 
-* **SchoolMint_lk_Enrollment**: Load the data from sql/data/lk_enrollment.csv into this table.
-* **Schoolmint_Progressmonitoring**: Refer to the template (provided separately).
-* **schoolmint_ApplicationStatuses**: Load the data from sql/data/application_statuses.csv into this table.
-* **SchoolMint_SchoolCodes**: Load with the school ID mapping that you received from SchoolMint support.
+1. **schoolmint_lk_Enrollment**: Load the data from sql/data/lk_enrollment.csv into this table.
+2. **schoolmint_Progressmonitoring**: Refer to the template sql/data/progress_monitoring.csv for an example.
+
+   * **Budget_NumTargetStudents** (required): The expected number of students in seats on our Finance's Census day, by grade level and school (as set by our finance team in conversation with SLs; we use 9/20 as our finance census date, but could differ by Region). 
+   * **Expected_NumReturnStudents** (required): The expected number of students returning each year, by grade-level and school. 
+   * **App 1 - App Final** (optional): Interim goals for number of applications submitted in SchoolMint.
+   * **Reg 1 - Reg Final** (optional): Interim goals for number of applications in "registration complete" and "registration verified" status. 
+
+3. **schoolmint_ApplicationStatuses**: Load the data from sql/data/application_statuses.csv into this table.
+4. **schoolmint_SchoolCodes**: Load with the school ID mapping that you received from SchoolMint support. Refer to sql/data/school_codes.csv for an example.
 
 Final ERD
 ##########

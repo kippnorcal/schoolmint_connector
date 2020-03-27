@@ -1,0 +1,9 @@
+.. _connector:
+
+Connector
+==========
+
+.. automodule:: api
+.. autoclass:: API
+    :members:
+    :private-members:

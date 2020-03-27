@@ -81,22 +81,16 @@
             
             
               <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="readme.html">Getting Started</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="readme.html#prerequisites">Prerequisites</a></li>
-<li class="toctree-l2"><a class="reference internal" href="readme.html#dependencies">Dependencies</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="readme.html#environment">Environment</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="environment_setup.html">Initial environment setup</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Schema</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#schema-setup">Schema Setup</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#lookup-tables">Lookup Tables</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#final-erd">Final ERD</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#tables-processes">Tables &amp; Processes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id1">Views</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Schema</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#schema-setup">Schema Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tables">Tables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stored-procedures">Stored Procedures</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="readme.html#running-the-job">Running the job</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#erd">ERD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tables-processes">Tables &amp; Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#views">Views</a></li>
 </ul>
 </li>
 </ul>
@@ -149,15 +143,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-          <li><a href="readme.html">Getting Started</a> &raquo;</li>
-        
       <li>Schema</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/schema_setup.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/schema.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -171,23 +163,10 @@
            <div itemprop="articleBody">
             
   <div class="section" id="schema">
-<h1>Schema<a class="headerlink" href="#schema" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>Schema<a class="headerlink" href="#schema" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="schema-setup">
 <h2>Schema Setup<a class="headerlink" href="#schema-setup" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="automatic-setup">
-<h3>Automatic Setup<a class="headerlink" href="#automatic-setup" title="Permalink to this headline">¶</a></h3>
-<p>Navigate to sql/mssql, and set up a locally hosted MSSQL database in Docker for development:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ docker-compose up -d
-</pre></div>
-</div>
-<p>Connect to the database in your favorite database IDE, and create your Database and Schema. Update your .env file to match.</p>
-<p>Navigate to the main project folder, and create the database objects automatically in the database:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ docker build -t schoolmint .
-$ docker run -it --network host schoolmint --mssql
-</pre></div>
-</div>
-<p>After the code is finished running, you should have the following tables, views, and sprocs:</p>
-</div>
+<p>The following database objects are necessary to run the Python code. Refer to the sql folder for the DDL.</p>
 <div class="section" id="tables">
 <h3>Tables<a class="headerlink" href="#tables" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
@@ -203,17 +182,6 @@ $ docker run -it --network host schoolmint --mssql
 <li><p>SchoolMint_SchoolCodes</p></li>
 </ul>
 </div>
-<div class="section" id="views">
-<h3>Views<a class="headerlink" href="#views" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>vw_SchoolMint_AppStatusList</p></li>
-<li><p>vw_SchoolMint_FactDailyStatus_InterimTargets</p></li>
-<li><p>vw_Schoolmint_FactDailyStatus</p></li>
-<li><p>vw_Schoolmint_FactProgressMonitoring</p></li>
-<li><p>vw_Schoolmint_Index_Demographics</p></li>
-<li><p>vw_SchoolMint_ProgressMonitoring</p></li>
-</ul>
-</div>
 <div class="section" id="stored-procedures">
 <h3>Stored Procedures<a class="headerlink" href="#stored-procedures" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
@@ -226,18 +194,8 @@ $ docker run -it --network host schoolmint --mssql
 </ul>
 </div>
 </div>
-<div class="section" id="lookup-tables">
-<h2>Lookup Tables<a class="headerlink" href="#lookup-tables" title="Permalink to this headline">¶</a></h2>
-<p>The following lookup tables need to be populated:</p>
-<ul class="simple">
-<li><p><strong>SchoolMint_lk_Enrollment</strong>: Load the data from sql/data/lk_enrollment.csv into this table.</p></li>
-<li><p><strong>Schoolmint_Progressmonitoring</strong>: Refer to the template (provided separately).</p></li>
-<li><p><strong>schoolmint_ApplicationStatuses</strong>: Load the data from sql/data/application_statuses.csv into this table.</p></li>
-<li><p><strong>SchoolMint_SchoolCodes</strong>: Load with the school ID mapping that you received from SchoolMint support.</p></li>
-</ul>
-</div>
-<div class="section" id="final-erd">
-<h2>Final ERD<a class="headerlink" href="#final-erd" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="erd">
+<h2>ERD<a class="headerlink" href="#erd" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://www.lucidchart.com/invitations/accept/47fd9583-9736-4174-983a-ec526ec2851c">View ERD on LucidChart</a></p>
 </div>
 <div class="section" id="tables-processes">
@@ -245,8 +203,8 @@ $ docker run -it --network host schoolmint --mssql
 <p>(click image to view larger)</p>
 <a class="reference external image-reference" href="_static/schoolmint_schema_tables.png"><img alt="_images/schoolmint_schema_tables.png" src="_images/schoolmint_schema_tables.png" /></a>
 </div>
-<div class="section" id="id1">
-<h2>Views<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="views">
+<h2>Views<a class="headerlink" href="#views" title="Permalink to this headline">¶</a></h2>
 <p>(click image to view larger)</p>
 <a class="reference external image-reference" href="_static/schoolmint_schema_views.png"><img alt="_images/schoolmint_schema_views.png" src="_images/schoolmint_schema_views.png" /></a>
 </div>

@@ -36,7 +36,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Index" href="genindex.html" />
-    <link rel="prev" title="Schema" href="schema_setup.html" /> 
+    <link rel="prev" title="Schema" href="schema.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -82,6 +82,7 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema.html">Schema</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Reference</a></li>
@@ -315,6 +316,140 @@ and upload to FTP associated with the report.</p>
 
 </dd></dl>
 
+<span class="target" id="module-main"></span><dl class="function">
+<dt id="main.delete_data_files">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">delete_data_files</code><span class="sig-paren">(</span><em class="sig-param">directory</em><span class="sig-paren">)</span><a class="headerlink" href="#main.delete_data_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete data files (not everything) from the given directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>directory</strong> (<em>String</em>) – Directory that we want to delete data files from</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.download_from_ftp">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">download_from_ftp</code><span class="sig-paren">(</span><em class="sig-param">ftp</em><span class="sig-paren">)</span><a class="headerlink" href="#main.download_from_ftp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download data files from FTP. It can take some time for SchoolMint 
+to upload the reports after the API request, so we use Tenacity retry 
+to wait up to 30 min.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ftp</strong> (<em>Object</em>) – FTP connection</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Names of the files downloaded from the FTP</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple (String, String)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.get_latest_file">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">get_latest_file</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#main.get_latest_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the file that matches the given name.
+Reverse sort by modification date in case there are multiple.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>String</em>) – Name of the file that we’re looking for</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Name of the most recently modified file with the given name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>String</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.process_application_data">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">process_application_data</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">file</em>, <em class="sig-param">school_year</em><span class="sig-paren">)</span><a class="headerlink" href="#main.process_application_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take application data from csv and insert into table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>conn</strong> (<em>Object</em>) – Database connection</p></li>
+<li><p><strong>file</strong> (<em>String</em>) – Name of the Application Data file</p></li>
+<li><p><strong>school_year</strong> (<em>String</em>) – 4 digit school year</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.process_application_data_index">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">process_application_data_index</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">file</em>, <em class="sig-param">school_year</em><span class="sig-paren">)</span><a class="headerlink" href="#main.process_application_data_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take application data index from csv and insert into table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>conn</strong> (<em>Object</em>) – Database connection</p></li>
+<li><p><strong>file</strong> (<em>String</em>) – Name of the Application Data Index file</p></li>
+<li><p><strong>school_year</strong> (<em>String</em>) – 4 digit school year</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.process_change_tracking">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">process_change_tracking</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="headerlink" href="#main.process_change_tracking" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute sproc to generate change history.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>conn</strong> (<em>Object</em>) – Database connection</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.process_fact_daily_status">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">process_fact_daily_status</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="headerlink" href="#main.process_fact_daily_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute sproc to generate fact daily status table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>conn</strong> (<em>Object</em>) – Database connection</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.read_csv_to_df">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">read_csv_to_df</code><span class="sig-paren">(</span><em class="sig-param">csv</em><span class="sig-paren">)</span><a class="headerlink" href="#main.read_csv_to_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the csv into a dataframe in preparation for database load.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>csv</strong> (<em>String</em>) – Name of the csv file to be read into a DataFrame</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Contents of the csv file</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="main.read_logs">
+<code class="sig-prename descclassname">main.</code><code class="sig-name descname">read_logs</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="headerlink" href="#main.read_logs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the given file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>String</em>) – Name of the file to be read (in this case, the logs)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Contents of the file</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>String</p>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 
 
@@ -328,7 +463,7 @@ and upload to FTP associated with the report.</p>
         <a href="genindex.html" class="btn btn-neutral float-right" title="Index" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="schema_setup.html" class="btn btn-neutral float-left" title="Schema" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="schema.html" class="btn btn-neutral float-left" title="Schema" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

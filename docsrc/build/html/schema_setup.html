@@ -174,16 +174,29 @@
 <h1>Schema<a class="headerlink" href="#schema" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="schema-setup">
 <h2>Schema Setup<a class="headerlink" href="#schema-setup" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="automatic-setup">
-<h3>Automatic Setup<a class="headerlink" href="#automatic-setup" title="Permalink to this headline">¶</a></h3>
-<p>Navigate to sql/mssql, and set up a locally hosted MSSQL database in Docker for development:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ docker-compose up -d
+<div class="section" id="automatic-setup-ms-sql">
+<h3>Automatic Setup: MS SQL<a class="headerlink" href="#automatic-setup-ms-sql" title="Permalink to this headline">¶</a></h3>
+<p>To set up a locally hosted MSSQL database in Docker for development:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ docker-compose -f sql/mssql/docker-compose.yml up -d
 </pre></div>
 </div>
 <p>Connect to the database in your favorite database IDE, and create your Database and Schema. Update your .env file to match.</p>
 <p>Navigate to the main project folder, and create the database objects automatically in the database:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ docker build -t schoolmint .
 $ docker run -it --network host schoolmint --mssql
+</pre></div>
+</div>
+</div>
+<div class="section" id="automatic-setup-postgresql">
+<h3>Automatic Setup: PostgreSQL<a class="headerlink" href="#automatic-setup-postgresql" title="Permalink to this headline">¶</a></h3>
+<p>To set up a locally hosted PostgreSQL database in Docker for development:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ docker-compose -f sql/postgres/docker-compose.yml up -d
+</pre></div>
+</div>
+<p>Connect to the database in your favorite database IDE, and create your Database and Schema. Update your .env file to match.</p>
+<p>Navigate to the main project folder, and create the database objects automatically in the database:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ docker build -t schoolmint .
+$ docker run -it --network host schoolmint --postgres
 </pre></div>
 </div>
 <p>After the code is finished running, you should have the following tables, views, and sprocs:</p>
@@ -197,32 +210,32 @@ $ docker run -it --network host schoolmint --mssql
 <li><p>schoolmint_ApplicationDataIndex_raw</p></li>
 <li><p>schoolmint_ApplicationDataIndex_raw_backup</p></li>
 <li><p>schoolmint_ApplicationStatuses</p></li>
-<li><p>SchoolMint_FactDailyStatus</p></li>
-<li><p>SchoolMint_lk_Enrollment</p></li>
-<li><p>Schoolmint_Progressmonitoring</p></li>
-<li><p>SchoolMint_SchoolCodes</p></li>
+<li><p>schoolmint_FactDailyStatus</p></li>
+<li><p>schoolmint_lk_Enrollment</p></li>
+<li><p>schoolmint_Progressmonitoring</p></li>
+<li><p>schoolmint_SchoolCodes</p></li>
 </ul>
 </div>
 <div class="section" id="views">
 <h3>Views<a class="headerlink" href="#views" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>vw_SchoolMint_AppStatusList</p></li>
-<li><p>vw_SchoolMint_FactDailyStatus_InterimTargets</p></li>
-<li><p>vw_Schoolmint_FactDailyStatus</p></li>
-<li><p>vw_Schoolmint_FactProgressMonitoring</p></li>
-<li><p>vw_Schoolmint_Index_Demographics</p></li>
-<li><p>vw_SchoolMint_ProgressMonitoring</p></li>
+<li><p>vw_schoolmint_AppStatusList</p></li>
+<li><p>vw_schoolmint_FactDailyStatus_InterimTargets</p></li>
+<li><p>vw_schoolmint_FactDailyStatus</p></li>
+<li><p>vw_schoolmint_FactProgressMonitoring</p></li>
+<li><p>vw_schoolmint_Index_Demographics</p></li>
+<li><p>vw_schoolmint_ProgressMonitoring</p></li>
 </ul>
 </div>
 <div class="section" id="stored-procedures">
 <h3>Stored Procedures<a class="headerlink" href="#stored-procedures" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><p>sproc_SchoolMint_Create_ChangeTracking_Entries</p></li>
-<li><p>sproc_SchoolMint_Create_FactDailyStatus</p></li>
-<li><p>sproc_SchoolMint_Index_PrepareTables</p></li>
-<li><p>sproc_SchoolMint_Index_PostProcess</p></li>
-<li><p>sproc_SchoolMint_Raw_PrepareTables</p></li>
-<li><p>sproc_SchoolMint_Raw_PostProcess</p></li>
+<li><p>sproc_schoolmint_Create_ChangeTracking_Entries</p></li>
+<li><p>sproc_schoolmint_Create_FactDailyStatus</p></li>
+<li><p>sproc_schoolmint_Index_PrepareTables</p></li>
+<li><p>sproc_schoolmint_Index_PostProcess</p></li>
+<li><p>sproc_schoolmint_Raw_PrepareTables</p></li>
+<li><p>sproc_schoolmint_Raw_PostProcess</p></li>
 </ul>
 </div>
 </div>

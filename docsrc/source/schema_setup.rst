@@ -4,14 +4,14 @@ Schema
 Schema Setup
 #############
 
-Automatic Setup
-~~~~~~~~~~~~~~~~
+Automatic Setup: MS SQL
+~~~~~~~~~~~~~~~~~~~~~~~
 
-Navigate to sql/mssql, and set up a locally hosted MSSQL database in Docker for development:
+To set up a locally hosted MSSQL database in Docker for development:
 
 .. code-block:: bash
 
-    $ docker-compose up -d
+    $ docker-compose -f sql/mssql/docker-compose.yml up -d
 
 Connect to the database in your favorite database IDE, and create your Database and Schema. Update your .env file to match.
 
@@ -21,6 +21,24 @@ Navigate to the main project folder, and create the database objects automatical
 
     $ docker build -t schoolmint .
     $ docker run -it --network host schoolmint --mssql
+
+Automatic Setup: PostgreSQL
+~~~~~~~~~~~~~~~~~~~~~~~
+
+To set up a locally hosted PostgreSQL database in Docker for development:
+
+.. code-block:: bash
+
+    $ docker-compose -f sql/postgres/docker-compose.yml up -d
+
+Connect to the database in your favorite database IDE, and create your Database and Schema. Update your .env file to match.
+
+Navigate to the main project folder, and create the database objects automatically in the database:
+
+.. code-block:: bash
+
+    $ docker build -t schoolmint .
+    $ docker run -it --network host schoolmint --postgres
 
 
 After the code is finished running, you should have the following tables, views, and sprocs:
@@ -34,29 +52,29 @@ Tables
 * schoolmint_ApplicationDataIndex_raw
 * schoolmint_ApplicationDataIndex_raw_backup
 * schoolmint_ApplicationStatuses
-* SchoolMint_FactDailyStatus
-* SchoolMint_lk_Enrollment
-* Schoolmint_Progressmonitoring
-* SchoolMint_SchoolCodes
+* schoolmint_FactDailyStatus
+* schoolmint_lk_Enrollment
+* schoolmint_Progressmonitoring
+* schoolmint_SchoolCodes
 
 Views
 ~~~~~~
-* vw_SchoolMint_AppStatusList
-* vw_SchoolMint_FactDailyStatus_InterimTargets
-* vw_Schoolmint_FactDailyStatus
-* vw_Schoolmint_FactProgressMonitoring
-* vw_Schoolmint_Index_Demographics
-* vw_SchoolMint_ProgressMonitoring
+* vw_schoolmint_AppStatusList
+* vw_schoolmint_FactDailyStatus_InterimTargets
+* vw_schoolmint_FactDailyStatus
+* vw_schoolmint_FactProgressMonitoring
+* vw_schoolmint_Index_Demographics
+* vw_schoolmint_ProgressMonitoring
 
 Stored Procedures
 ~~~~~~~~~~~~~~~~~~
 
-* sproc_SchoolMint_Create_ChangeTracking_Entries
-* sproc_SchoolMint_Create_FactDailyStatus
-* sproc_SchoolMint_Index_PrepareTables
-* sproc_SchoolMint_Index_PostProcess
-* sproc_SchoolMint_Raw_PrepareTables
-* sproc_SchoolMint_Raw_PostProcess
+* sproc_schoolmint_Create_ChangeTracking_Entries
+* sproc_schoolmint_Create_FactDailyStatus
+* sproc_schoolmint_Index_PrepareTables
+* sproc_schoolmint_Index_PostProcess
+* sproc_schoolmint_Raw_PrepareTables
+* sproc_schoolmint_Raw_PostProcess
 
 Lookup Tables
 ##############

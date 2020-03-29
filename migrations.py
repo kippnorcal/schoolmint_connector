@@ -1,8 +1,11 @@
 import os
+import traceback
 
 import pandas as pd
 from sqlsorcery import MSSQL, PostgreSQL
 from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.sql import text as sa_text
+from sqlalchemy.types import Boolean
 
 
 def migrate_mssql():
@@ -106,22 +109,28 @@ def migrate_postgres():
         sql.insert_into("schoolmint_lk_Enrollment", enrollments)
 
         application_statuses = pd.read_csv("sql/data/application_statuses.csv")
-        sql.insert_into("schoolmint_ApplicationStatuses", application_statuses)
+        sql.insert_into(
+            "schoolmint_ApplicationStatuses",
+            application_statuses,
+            dtype={"Application": Boolean, "Registration": Boolean},
+        )
 
         # Views
         sql.exec_cmd_from_file("sql/postgresql/views/vw_schoolmint_AppStatusList.sql")
+        sql.exec_cmd_from_file("sql/postgresql/views/vw_schoolmint_FactDailyStatus.sql")
         sql.exec_cmd_from_file(
             "sql/postgresql/views/vw_schoolmint_FactDailyStatus_InterimTargets.sql"
         )
-        sql.exec_cmd_from_file("sql/postgresql/views/vw_schoolmint_FactDailyStatus.sql")
-        sql.exec_cmd_from_file(
-            "sql/postgresql/views/vw_schoolmint_ProgressMonitoring.sql"
-        )
-        sql.exec_cmd_from_file(
-            "sql/postgresql/views/vw_schoolmint_FactProgressMonitoring.sql"
-        )
         sql.exec_cmd_from_file(
             "sql/postgresql/views/vw_schoolmint_Index_Demographics.sql"
+        )
+        sql_str = sql._read_sql_file(
+            "sql/postgresql/views/vw_schoolmint_ProgressMonitoring.sql"
+        )
+        command = sa_text(sql_str).execution_options(autocommit=True)
+        sql.engine.execute(command)
+        sql.exec_cmd_from_file(
+            "sql/postgresql/views/vw_schoolmint_FactProgressMonitoring.sql"
         )
 
         # Stored Procedures
@@ -147,3 +156,7 @@ def migrate_postgres():
     except ProgrammingError as e:
         if "Cannot open database" in str(e):
             print("ERROR: First create your database and schema manually")
+
+    except Exception as e:
+        print(e)
+        print(traceback.format_exc())

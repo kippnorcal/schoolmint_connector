@@ -205,7 +205,6 @@ def main():
     try:
         school_year = os.getenv("CURRENT_SCHOOL_YEAR")
         conn = MSSQL()
-        mailer = Mailer()
         ftp = FTP()
 
         ftp.archive_remote_files(SOURCEDIR)
@@ -223,11 +222,13 @@ def main():
         process_fact_daily_status(conn)
 
         success_message = read_logs("app.log")
+        mailer = Mailer()
         mailer.notify(results=success_message)
 
     except Exception as e:
         logging.exception(e)
         stack_trace = traceback.format_exc()
+        mailer = Mailer()
         mailer.notify(success=False, error_message=stack_trace)
 
 

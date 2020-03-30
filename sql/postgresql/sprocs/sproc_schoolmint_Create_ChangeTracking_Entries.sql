@@ -72,9 +72,9 @@ LEFT JOIN custom."schoolmint_ApplicationData_raw_backup" back1
 LEFT JOIN custom."schoolmint_lk_Enrollment" lk
    ON raw1."Enrollment_Period" = lk."Enrollment_Period_id"
 WHERE (
-      raw1."Application_Status" <> ISNULL(back1."Application_Status", 999999)
-   OR raw1."Last_Update_Date" <> ISNULL(back1."Last_Update_Date", '1970-01-01')
-   OR raw1."Last_Status_Change" <> ISNULL(back1."Last_Status_Change", 999999)
+      raw1."Application_Status" <> COALESCE(back1."Application_Status", 999999)
+   OR raw1."Last_Update_Date" <> COALESCE(back1."Last_Update_Date", '1970-01-01')
+   OR raw1."Last_Status_Change" <> COALESCE(back1."Last_Status_Change", 999999)
 )
 /* Ensure only processing current year */
 AND raw1."SchoolYear4Digit" = (SELECT MAX("SchoolYear4Digit") FROM custom."schoolmint_ApplicationData_raw")

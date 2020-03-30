@@ -9,7 +9,7 @@ sphinx-rtd-theme = "*"
 
 [packages]
 pysftp = "*"
-sqlsorcery = "*"
+sqlsorcery = "==0.1.2"
 requests = "*"
 tenacity = "*"
 

@@ -9,4 +9,4 @@ RUN pip install pipenv
 COPY Pipfile .
 RUN pipenv install --skip-lock
 COPY ./ .
-CMD ["pipenv", "run", "python", "main.py"]
+ENTRYPOINT ["pipenv", "run", "python", "main.py"]

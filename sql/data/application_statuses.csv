@@ -1,0 +1,13 @@
+StatusID,Status,StatusName,StatusDescription,StatusGroupName,Application,Registration,Rank
+2,SU,Submitted,A new application has been created,Parents Submit Applications Before the Lottery,1,,8
+3,CA,Cancelled,The application has been cancelled by a student or admin before the lottery,Parents Submit Applications Before the Lottery,1,,12
+4,PO,Pre-Offer,The application will be offered a seat when the lottery results are made public,Lottery is Run,1,,6
+5,WA,Waitlisted,The application has been placed on the waitlist,Lottery is Run,1,,7
+6,AC,Accepted,The student has accepted their offered seat,Parents Act on Offer,1,,4
+7,DE,Declined,The student has declined their offered seat,Parents Act on Offer,1,,9
+8,RS,Rescinded,The organization/school has rescinded the offered seat,Parents Act on Offer,1,,10
+9,RP,Registration In Progress,The student has begun registration,Parents who accept can now register,1,,3
+10,RC,Registration Complete,The registration is completed,Parents who accept can now register,1,1,2
+11,WD,Withdrawn,The application has been withdrawn by a student or admin after the lottery,"After Accepting an Offer, a family changes their mind and decides not to attend KIPP",1,,11
+12,RV,Registration Verified,The registration has been verified,School Admins Can Verify Registration Documents,1,1,1
+13,OF,Offered,The student has been offered a seat,Lottery is Run,1,,5

@@ -14,6 +14,7 @@ from tenacity import *
 from api import API
 from ftp import FTP
 from mailer import Mailer
+from migrations import migrate_mssql, migrate_postgres
 
 LOCALDIR = "files"
 SOURCEDIR = "schoolmint"
@@ -28,6 +29,13 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %I:%M:%S%p %Z",
 )
 logging.getLogger("paramiko").setLevel(logging.ERROR)
+
+parser = argparse.ArgumentParser(description="Additional migration options")
+parser.add_argument("--mssql", help="Run migrations for MS SQL", action="store_true")
+parser.add_argument(
+    "--postgres", help="Run migrations for PostgreSQL", action="store_true"
+)
+args = parser.parse_args()
 
 
 def read_logs(filename):
@@ -197,7 +205,6 @@ def main():
     try:
         school_year = os.getenv("CURRENT_SCHOOL_YEAR")
         conn = MSSQL()
-        mailer = Mailer()
         ftp = FTP()
 
         ftp.archive_remote_files(SOURCEDIR)
@@ -215,13 +222,20 @@ def main():
         process_fact_daily_status(conn)
 
         success_message = read_logs("app.log")
+        mailer = Mailer()
         mailer.notify(results=success_message)
 
     except Exception as e:
         logging.exception(e)
         stack_trace = traceback.format_exc()
+        mailer = Mailer()
         mailer.notify(success=False, error_message=stack_trace)
 
 
 if __name__ == "__main__":
-    main()
+    if args.mssql:
+        migrate_mssql()
+    elif args.postgres:
+        migrate_postgres()
+    else:
+        main()

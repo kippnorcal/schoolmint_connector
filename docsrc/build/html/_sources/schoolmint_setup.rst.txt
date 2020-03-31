@@ -1,6 +1,8 @@
 Creating the SchoolMint Reports
 *********************************
 
+Reference: `SchoolMint Custom Reports table fields documentation <https://schoolmint6.zendesk.com/hc/en-us/articles/360030948152>`_
+
 In the SchoolMint application, for each enrollment period that you want to report on, 
 create two reports: 'Automated Application Data Raw XX-XX' and 'Automated Application Data Index XX-XX'.
 
@@ -21,6 +23,8 @@ Use the toolbar on the left to search for fields.
 Drag and drop them into the report.
 
 :download:`Download sample Automated Application Data Raw file <Automated_Application_Data_Raw_20-21-example.csv>` 
+
+:download:`Download table field mappings for Automated Application Data Raw <SchoolMint Report Definitions - Automated Application Data Raw.csv>`
 
 :download:`Download sample Automated Application Data Index file <Automated_Application_Data_Index_20-21-example.csv>` 
 

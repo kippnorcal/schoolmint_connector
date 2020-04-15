@@ -9,14 +9,19 @@ class API:
 
     def __init__(self):
         """Initialize environment variables used to connect to the API."""
-        self.domain = os.getenv("API_DOMAIN")
-        self.account_email = os.getenv("API_ACCOUNT_EMAIL")
-        self.api_tokens = [
-            os.getenv("API_TOKEN_DATA"),
-            os.getenv("API_TOKEN_DATA_INDEX"),
-        ]
+        regional = {
+            "domain": os.getenv("API_DOMAIN_REGIONAL"),
+            "account_email": os.getenv("API_ACCOUNT_EMAIL_REGIONAL"),
+            "api_token": os.getenv("API_TOKEN_REGIONAL"),
+        }
+        enrolloak = {
+            "domain": os.getenv("API_DOMAIN_ENROLLOAK"),
+            "account_email": os.getenv("API_ACCOUNT_EMAIL_ENROLLOAK"),
+            "api_token": os.getenv("API_TOKEN_ENROLLOAK"),
+        }
+        self.endpoints = [regional, enrolloak]
 
-    def _post_demand_export(self, api_token):
+    def _post_demand_export(self, endpoint):
         """
         Post request to SchoolMint API. This triggers report generation 
         and upload to FTP associated with the report.
@@ -24,8 +29,9 @@ class API:
         :param api_token: API token for the report.
         :type api_token: String
         """
-        domain = self.domain
-        account_email = self.account_email
+        domain = endpoint.get("domain")
+        account_email = endpoint.get("account_email")
+        api_token = endpoint.get("api_token")
         url = "https://" + domain + "/api/v2/demand_exports"
         headers = {"Api-Token": api_token}
         body = {"account_email": account_email}
@@ -48,5 +54,5 @@ class API:
 
     def request_reports(self):
         """Demand export for each API token."""
-        for api_token in self.api_tokens:
-            self._post_demand_export(api_token=api_token)
+        for endpoint in self.endpoints:
+            self._post_demand_export(endpoint)

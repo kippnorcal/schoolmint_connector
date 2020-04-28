@@ -124,7 +124,7 @@ def download_from_ftp(ftp):
     """
     ftp.download_dir(SOURCEDIR, LOCALDIR)
     regional_file = get_latest_file("Regional Automated Application Data Raw")
-    bridge_file = get_latest_file("KIPP Bridge Automated Application Data Raw")
+    bridge_file = get_latest_file("Bridge Automated Application Data Raw")
     return [regional_file, bridge_file]
 
 
@@ -147,6 +147,10 @@ def process_application_data(conn, files, school_year):
     count = result.fetchone()[0]
     table = os.getenv("DB_RAW_TABLE")
     if count == 0:
+        # for 2021 enrollment period, exclude duplicate Bridge records coming from the KBA SM instance
+        # all of these records (and more) are already found in the Oakland Enrolls instance
+        # TODO review for future years to see if this needs to stay
+        df = df.loc[df["School_Applying_to"] != "164"]
         conn.insert_into(table, df)
         result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_POST')} {school_year}")
         result_set = result.fetchone()

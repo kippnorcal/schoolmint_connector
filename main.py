@@ -120,7 +120,7 @@ def download_from_ftp(ftp):
     :param ftp: FTP connection
     :type ftp: Object
     :return: Names of the files downloaded from the FTP
-    :rtype: Tuple (String, String)
+    :rtype: List
     """
     ftp.download_dir(SOURCEDIR, LOCALDIR)
     regional_file = get_latest_file("Regional Automated Application Data Raw")
@@ -150,7 +150,8 @@ def process_application_data(conn, files, school_year):
         # for 2021 enrollment period, exclude duplicate Bridge records coming from the KBA SM instance
         # all of these records (and more) are already found in the Oakland Enrolls instance
         # TODO review for future years to see if this needs to stay
-        df = df.loc[df["School_Applying_to"] != "164"]
+        bridge_id = "164"
+        df = df.loc[df["School_Applying_to"] != bridge_id]
         conn.insert_into(table, df)
         result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_POST')} {school_year}")
         result_set = result.fetchone()

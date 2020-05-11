@@ -9,7 +9,6 @@ class API:
 
     def __init__(self, env_suffixes=[""]):
         """Initialize environment variables used to connect to the API."""
-        # suffixes = [_REGIONAL, _ENROLLOAK]
         self.endpoints = []
         for suffix in env_suffixes:
             self.endpoints.append(

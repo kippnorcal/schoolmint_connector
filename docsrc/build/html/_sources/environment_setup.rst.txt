@@ -38,6 +38,8 @@ Create .env file
     FTP_KEY=
     ARCHIVE_MAX_DAYS=
 
+    API_SUFFIXES=
+    
     API_DOMAIN_SUFFIX1=
     API_ACCOUNT_EMAIL_SUFFIX1=
     API_TOKEN_SUFFIX1=
@@ -79,12 +81,15 @@ records.
 
 **ARCHIVE_MAX_DAYS**: Files older than this number of days will be deleted from the FTP.
 
+**API_SUFFIXES**: Comma separated (no space) list of API suffixes (see following definition)
+(eg. _SUFFIX1,_SUFFIX2)
+
 **API_DOMAIN, API_ACCOUNT_EMAIL, API_TOKEN**: SchoolMint API connection credentials to get the report. 
-Suffix(es) must be defined in config.py
+Suffix(es) must be defined in the variable API_SUFFIXES.
 If there is only one endpoint, then you only need to include the connection credentials once with one API token.
 If there are multiple endpoints, you can repeat these three env variables with a unique suffix.
-(eg. API_DOMAIN_SCHOOL1, API_ACCOUNT_EMAIL_SCHOOL1, API_TOKEN_SCHOOL1, API_DOMAIN_SCHOOL2, API_ACCOUNT_EMAIL_SCHOOL2, API_TOKEN_SCHOOL2, )
-This token must be updated from year to year because each enrollment period has a unique report.
+(eg. API_DOMAIN_SUFFIX1, API_ACCOUNT_EMAIL_SUFFIX1, API_TOKEN_SUFFIX1, API_DOMAIN_SUFFIX2, API_ACCOUNT_EMAIL_SUFFIX2, API_TOKEN_SUFFIX2)
+API token must be updated from year to year because each enrollment period has a unique report.
 
 **CURRENT_SCHOOL_YEAR**: 4 digit enrollment school year (eg. 2021 during the 19-20 SY). 
 This populates the SchoolYear4Digit column in the raw data tables. 

@@ -182,6 +182,14 @@ and upload to FTP associated with the report.</p>
 <em class="property">class </em><code class="sig-prename descclassname">ftp.</code><code class="sig-name descname">FTP</code><a class="headerlink" href="#ftp.FTP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for the local FTP connection.</p>
 <dl class="method">
+<dt id="ftp.FTP._add_hostkeys">
+<code class="sig-name descname">_add_hostkeys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftp.FTP._add_hostkeys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds sftp host key to known_hosts to prevent man in the middle attacks.
+Requires FTP_KEY be included in .env. Key can be acquired using
+OpenSSH: ssh-keyscan {sftp_url}</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="ftp.FTP._archive_file">
 <code class="sig-name descname">_archive_file</code><span class="sig-paren">(</span><em class="sig-param">file</em><span class="sig-paren">)</span><a class="headerlink" href="#ftp.FTP._archive_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Place the file in an ‘archive’ folder within its directory.</p>

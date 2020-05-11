@@ -11,16 +11,34 @@ class FTP:
 
     def __init__(self):
         """Initialize connection to the FTP server."""
-        FTP_HOST = os.getenv("FTP_HOSTNAME")
-        FTP_USER = os.getenv("FTP_USERNAME")
-        FTP_PWD = os.getenv("FTP_PWD")
+        self.FTP_HOST = os.getenv("FTP_HOSTNAME")
+        self.FTP_USER = os.getenv("FTP_USERNAME")
+        self.FTP_PWD = os.getenv("FTP_PWD")
+        self.FTP_KEY = os.getenv("FTP_KEY")
         self.ARCHIVE_MAX_DAYS = int(os.getenv("ARCHIVE_MAX_DAYS"))
+        self._add_hostkeys()
+        self.ftpsrv = pysftp.Connection(
+            host=self.FTP_HOST,
+            username=self.FTP_USER,
+            password=self.FTP_PWD,
+            cnopts=self.cnopts,
+        )
+
+    def _add_hostkeys(self):
+        """
+        Adds sftp host key to known_hosts to prevent man in the middle attacks.
+        Requires FTP_KEY be included in .env. Key can be acquired using
+        OpenSSH: ssh-keyscan {sftp_url}
+        """
+        hostkey = f"{self.FTP_HOST} ssh-rsa {self.FTP_KEY}"
+        ssh_dir = "/root/.ssh/"
+        host_file = f"{ssh_dir}known_hosts"
+        os.makedirs(os.path.dirname(ssh_dir), exist_ok=True)
+        with open(host_file, "w") as f:
+            f.write(hostkey)
 
         self.cnopts = pysftp.CnOpts()
-        self.cnopts.hostkeys = None
-        self.ftpsrv = pysftp.Connection(
-            host=FTP_HOST, username=FTP_USER, password=FTP_PWD, cnopts=self.cnopts
-        )
+        self.cnopts.hostkeys.load(host_file)
 
     def download_dir(self, remotedir, localdir):
         """

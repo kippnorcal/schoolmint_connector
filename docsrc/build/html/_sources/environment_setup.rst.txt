@@ -35,6 +35,7 @@ Create .env file
     FTP_HOSTNAME=
     FTP_USERNAME=
     FTP_PWD=
+    FTP_KEY=
     ARCHIVE_MAX_DAYS=
 
     API_DOMAIN_REGIONAL=
@@ -74,7 +75,7 @@ records.
 **SPROC_FACT_DAILY**: Name of the sproc that generates the Fact Daily Status 
 records.
 
-**FTP_HOSTNAME, FTP_USERNAME, FTP_PWD**: FTP server connection variables.
+**FTP_HOSTNAME, FTP_USERNAME, FTP_PWD, FTP_KEY**: FTP server connection variables.
 
 **ARCHIVE_MAX_DAYS**: Files older than this number of days will be deleted from the FTP.
 

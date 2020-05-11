@@ -7,19 +7,18 @@ import requests
 class API:
     """Class for the SchoolMint API connection."""
 
-    def __init__(self):
+    def __init__(self, env_suffixes=[""]):
         """Initialize environment variables used to connect to the API."""
-        regional = {
-            "domain": os.getenv("API_DOMAIN_REGIONAL"),
-            "account_email": os.getenv("API_ACCOUNT_EMAIL_REGIONAL"),
-            "api_token": os.getenv("API_TOKEN_REGIONAL"),
-        }
-        enrolloak = {
-            "domain": os.getenv("API_DOMAIN_ENROLLOAK"),
-            "account_email": os.getenv("API_ACCOUNT_EMAIL_ENROLLOAK"),
-            "api_token": os.getenv("API_TOKEN_ENROLLOAK"),
-        }
-        self.endpoints = [regional, enrolloak]
+        # suffixes = [_REGIONAL, _ENROLLOAK]
+        self.endpoints = []
+        for suffix in env_suffixes:
+            self.endpoints.append(
+                {
+                    "domain": os.getenv(f"API_DOMAIN{suffix}"),
+                    "account_email": os.getenv(f"API_ACCOUNT_EMAIL{suffix}"),
+                    "api_token": os.getenv(f"API_TOKEN{suffix}"),
+                }
+            )
 
     def _post_demand_export(self, endpoint):
         """

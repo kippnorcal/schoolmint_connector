@@ -12,6 +12,7 @@ from sqlsorcery import MSSQL
 from tenacity import *
 
 from api import API
+import config
 from ftp import FTP
 from mailer import Mailer
 from migrations import migrate_mssql, migrate_postgres
@@ -194,7 +195,7 @@ def main():
         ftp.archive_remote_files(SOURCEDIR)
         ftp.delete_old_archive_files(SOURCEDIR)
 
-        API().request_reports()
+        API(config.api_suffixes).request_reports()
         if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
             delete_data_files(LOCALDIR)
         files = download_from_ftp(ftp)

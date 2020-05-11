@@ -4,7 +4,7 @@ Creating the SchoolMint Reports
 Reference: `SchoolMint Custom Reports table fields documentation <https://schoolmint6.zendesk.com/hc/en-us/articles/360030948152>`_
 
 In the SchoolMint application, for each enrollment period that you want to report on, 
-create two reports: 'Automated Application Data Raw XX-XX' and 'Automated Application Data Index XX-XX'.
+create a new report: 'Automated Application Data Raw XX-XX'
 
 1. Select the enrollment period.
 2. Click on the *Reports* menu.
@@ -25,8 +25,6 @@ Drag and drop them into the report.
 :download:`Download sample Automated Application Data Raw file <Automated_Application_Data_Raw_20-21-example.csv>` 
 
 :download:`Download table field mappings for Automated Application Data Raw <SchoolMint Report Definitions - Automated Application Data Raw.csv>`
-
-:download:`Download sample Automated Application Data Index file <Automated_Application_Data_Index_20-21-example.csv>` 
 
 .. image:: _static/schoolmint_create_report3.png
 
@@ -113,45 +111,3 @@ Columns for Application Data Raw:
     Sibling_2_Grade
     Sibling_2_School
     Sibling_2_DOB
-
-Columns for Application Data Index:
-
-.. code-block:: text
-
-    applicant_id
-    account_id
-    student_id
-    application_id
-    first_name
-    middle_name
-    last_name
-    birth_date
-    gender
-    email
-    guardian_first_name
-    guardian_last_name
-    phone_number
-    home_phone_number
-    street1
-    street2
-    zipcode
-    state
-    city
-    lives_with
-    application_type
-    created_by
-    submission_date
-    status
-    waitlist_number
-    app_status_timestamp
-    app_offered_date
-    last_updated
-    current_grade_level
-    grade_name
-    school_name
-    current_school_name
-    priorities
-    district_name
-    school_group
-    preferred_language
-

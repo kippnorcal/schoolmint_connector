@@ -23,7 +23,7 @@ Navigate to the main project folder, and create the database objects automatical
     $ docker run -it --network host schoolmint --mssql
 
 Automatic Setup: PostgreSQL
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To set up a locally hosted PostgreSQL database in Docker for development:
 
@@ -49,8 +49,6 @@ Tables
 * schoolmint_ApplicationData_changehistory
 * schoolmint_ApplicationData_raw
 * schoolmint_ApplicationData_raw_backup
-* schoolmint_ApplicationDataIndex_raw
-* schoolmint_ApplicationDataIndex_raw_backup
 * schoolmint_ApplicationStatuses
 * schoolmint_FactDailyStatus
 * schoolmint_lk_Enrollment
@@ -71,8 +69,6 @@ Stored Procedures
 
 * sproc_schoolmint_Create_ChangeTracking_Entries
 * sproc_schoolmint_Create_FactDailyStatus
-* sproc_schoolmint_Index_PrepareTables
-* sproc_schoolmint_Index_PostProcess
 * sproc_schoolmint_Raw_PrepareTables
 * sproc_schoolmint_Raw_PostProcess
 

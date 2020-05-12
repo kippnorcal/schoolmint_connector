@@ -187,28 +187,32 @@
 
 DB_SERVER=
 DB=
+DB_SCHEMA=
 DB_USER=
 DB_PWD=
-DB_SCHEMA=
 
 DB_RAW_TABLE=
-DB_RAW_INDEX_TABLE=
 SPROC_RAW_PREP=
 SPROC_RAW_POST=
-SPROC_RAW_INDEX_PREP=
-SPROC_RAW_INDEX_POST=
 SPROC_CHANGE_TRACK=
 SPROC_FACT_DAILY=
 
 FTP_HOSTNAME=
 FTP_USERNAME=
 FTP_PWD=
+FTP_KEY=
 ARCHIVE_MAX_DAYS=
 
-API_DOMAIN=
-API_ACCOUNT_EMAIL=
-API_TOKEN_DATA=
-API_TOKEN_DATA_INDEX=
+API_SUFFIXES=
+
+API_DOMAIN_SUFFIX1=
+API_ACCOUNT_EMAIL_SUFFIX1=
+API_TOKEN_SUFFIX1=
+
+API_DOMAIN_SUFFIX2=
+API_ACCOUNT_EMAIL_SUFFIX2=
+API_TOKEN_SUFFIX2=
+
 CURRENT_SCHOOL_YEAR=
 
 GMAIL_USER=
@@ -216,7 +220,6 @@ GMAIL_PWD=
 SLACK_EMAIL=
 TO_NAME=
 TO_ADDRESS=
-BCC_ADDRESS=
 </pre></div>
 </div>
 <p><strong>DELETE_LOCAL_FILES</strong>: Keep downloaded files on the local machine or not.
@@ -225,28 +228,24 @@ This setting doesn’t matter when using Docker. Suggested: True.</p>
 <a class="reference external" href="https://sqlsorcery.readthedocs.io/en/latest/cookbook/environment.html">sqlsorcery</a>.</p>
 <p><strong>DB_RAW_TABLE</strong>: Name of the database table that the Application Data
 file data goes into.</p>
-<p><strong>DB_RAW_INDEX_TABLE</strong>: Name of the database table that the Application
-Data Index file data goes into.</p>
 <p><strong>SPROC_RAW_PREP</strong>: Name of the pre-processing sproc that backs up and
 truncates the Application Data table.</p>
 <p><strong>SPROC_RAW_POST</strong>: Name of the post-processing sproc that sets the
 SchoolYear4Digit column and restores from backup if the Application Data table is empty.</p>
-<p><strong>SPROC_RAW_INDEX_PREP</strong>: Name of the pre-processing sproc that backs up
-and truncates the Application Data Index table.</p>
-<p><strong>SPROC_RAW_INDEX_POST</strong>: Name of the post-processing sproc that sets the
-SchoolYear4Digit column and restores from backup if the Application Data
-Index table is empty.</p>
 <p><strong>SPROC_CHANGE_TRACK</strong>: Name of the sproc that generates the Change History
 records.</p>
 <p><strong>SPROC_FACT_DAILY</strong>: Name of the sproc that generates the Fact Daily Status
 records.</p>
-<p><strong>FTP_HOSTNAME, FTP_USERNAME, FTP_PWD</strong>: FTP server connection variables.</p>
+<p><strong>FTP_HOSTNAME, FTP_USERNAME, FTP_PWD, FTP_KEY</strong>: FTP server connection variables.</p>
 <p><strong>ARCHIVE_MAX_DAYS</strong>: Files older than this number of days will be deleted from the FTP.</p>
-<p><strong>API_DOMAIN, API_ACCOUNT_EMAIL</strong>: SchoolMint API connection credentials.</p>
-<p><strong>API_TOKEN_DATA</strong>: API Token for the Application Data report. Provided by SchoolMint.
-This token must be updated from year to year because each enrollment period has a unique report.</p>
-<p><strong>API_TOKEN_DATA_INDEX</strong>: API Token for the Application Data Index report. Provided by SchoolMint.
-This token must be updated from year to year because each enrollment period has a unique report.</p>
+<p><strong>API_SUFFIXES</strong>: Comma separated (no space) list of API suffixes (see following definition)
+(eg. _SUFFIX1,_SUFFIX2)</p>
+<p><strong>API_DOMAIN, API_ACCOUNT_EMAIL, API_TOKEN</strong>: SchoolMint API connection credentials to get the report.
+Suffix(es) must be defined in the variable API_SUFFIXES.
+If there is only one endpoint, then you only need to include the connection credentials once with one API token.
+If there are multiple endpoints, you can repeat these three env variables with a unique suffix.
+(eg. API_DOMAIN_SUFFIX1, API_ACCOUNT_EMAIL_SUFFIX1, API_TOKEN_SUFFIX1, API_DOMAIN_SUFFIX2, API_ACCOUNT_EMAIL_SUFFIX2, API_TOKEN_SUFFIX2)
+API token must be updated from year to year because each enrollment period has a unique report.</p>
 <p><strong>CURRENT_SCHOOL_YEAR</strong>: 4 digit enrollment school year (eg. 2021 during the 19-20 SY).
 This populates the SchoolYear4Digit column in the raw data tables.
 This must be updated when new reports are acquired for the next school year.</p>

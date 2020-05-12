@@ -120,15 +120,15 @@ def download_from_ftp(ftp):
     :param ftp: FTP connection
     :type ftp: Object
     :return: Names of the files downloaded from the FTP
-    :rtype: Tuple (String, String)
+    :rtype: List
     """
     ftp.download_dir(SOURCEDIR, LOCALDIR)
-    app_file = get_latest_file("Automated Application Data Raw")
-    app_index_file = get_latest_file("Automated Application Data Index")
-    return app_file, app_index_file
+    regional_file = get_latest_file("Regional Automated Application Data Raw")
+    bridge_file = get_latest_file("Bridge Automated Application Data Raw")
+    return [regional_file, bridge_file]
 
 
-def process_application_data(conn, file, school_year):
+def process_application_data(conn, files, school_year):
     """
     Take application data from csv and insert into table.
     
@@ -139,37 +139,21 @@ def process_application_data(conn, file, school_year):
     :param school_year: 4 digit school year
     :type school_year: String
     """
-    df = read_csv_to_df(f"{LOCALDIR}/{file}")
+    df = pd.DataFrame()
+    for file in files:
+        df_file = read_csv_to_df(f"{LOCALDIR}/{file}")
+        df = df.append(df_file)
     result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_PREP')} {school_year}")
     count = result.fetchone()[0]
     table = os.getenv("DB_RAW_TABLE")
     if count == 0:
+        # for 2021 enrollment period, exclude duplicate Bridge records coming from the KBA SM instance
+        # all of these records (and more) are already found in the Oakland Enrolls instance
+        # TODO review for future years to see if this needs to stay
+        bridge_id = "164"
+        df = df.loc[df["School_Applying_to"] != bridge_id]
         conn.insert_into(table, df)
         result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_POST')} {school_year}")
-        result_set = result.fetchone()
-        logging.info(f"Loaded {result_set[1]} rows into backup table '{table}_backup'.")
-        logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
-    else:
-        raise Exception(f"ERROR: Table {table} was not truncated.")
-
-
-def process_application_data_index(conn, file, school_year):
-    """Take application data index from csv and insert into table.
-    
-    :param conn: Database connection
-    :type conn: Object
-    :param file: Name of the Application Data Index file
-    :type file: String
-    :param school_year: 4 digit school year
-    :type school_year: String
-    """
-    df = read_csv_to_df(f"{LOCALDIR}/{file}")
-    result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_INDEX_PREP')} {school_year}")
-    count = result.fetchone()[0]
-    table = os.getenv("DB_RAW_INDEX_TABLE")
-    if count == 0:
-        conn.insert_into(table, df)
-        result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_INDEX_POST')} {school_year}")
         result_set = result.fetchone()
         logging.info(f"Loaded {result_set[1]} rows into backup table '{table}_backup'.")
         logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
@@ -210,13 +194,13 @@ def main():
         ftp.archive_remote_files(SOURCEDIR)
         ftp.delete_old_archive_files(SOURCEDIR)
 
-        API().request_reports()
+        api_suffixes = os.getenv("API_SUFFIXES").split(",")
+        API(api_suffixes).request_reports()
         if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
             delete_data_files(LOCALDIR)
-        app_file, app_index_file = download_from_ftp(ftp)
+        files = download_from_ftp(ftp)
 
-        process_application_data(conn, app_file, school_year)
-        process_application_data_index(conn, app_index_file, school_year)
+        process_application_data(conn, files, school_year)
 
         process_change_tracking(conn)
         process_fact_daily_status(conn)

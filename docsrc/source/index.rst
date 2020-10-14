@@ -18,4 +18,4 @@ Links
     
     reference
     genindex
-    Source Code on Github <https://github.com/kipp-bayarea/schoolmint_connector>
+    Source Code on Github <https://github.com/kippnorcal/schoolmint_connector>

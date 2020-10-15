@@ -5,7 +5,7 @@ Clone the repo
 ---------------
 .. code-block:: bash
 
-    git clone https://github.com/kipp-bayarea/schoolmint_connector.git
+    git clone https://github.com/kippnorcal/schoolmint_connector.git
 
 
 FTP setup

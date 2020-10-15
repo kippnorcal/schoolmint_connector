@@ -1,9 +1,7 @@
 
 
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -13,12 +11,18 @@
   
 
   
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -30,10 +34,6 @@
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" /> 
 </head>
@@ -49,7 +49,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> Schoolmint Connector
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Schoolmint Connector
           
 
           
@@ -72,6 +72,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -85,12 +86,13 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Index</a></li>
-<li class="toctree-l1"><a class="reference external" href="https://github.com/kipp-bayarea/schoolmint_connector">Source Code on Github</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/kippnorcal/schoolmint_connector">Source Code on Github</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -129,7 +131,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Index</li>
     
@@ -188,11 +190,16 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference.html#api.API">API (class in api)</a>
+      <li>
+    api
+
+      <ul>
+        <li><a href="reference.html#module-api">module</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference.html#module-api">api (module)</a>
+      <li><a href="reference.html#api.API">API (class in api)</a>
 </li>
       <li><a href="reference.html#ftp.FTP.archive_remote_files">archive_remote_files() (ftp.FTP method)</a>
 </li>
@@ -214,11 +221,16 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference.html#ftp.FTP">FTP (class in ftp)</a>
+      <li>
+    ftp
+
+      <ul>
+        <li><a href="reference.html#module-ftp">module</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference.html#module-ftp">ftp (module)</a>
+      <li><a href="reference.html#ftp.FTP">FTP (class in ftp)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -226,12 +238,28 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    mailer
+
+      <ul>
+        <li><a href="reference.html#module-mailer">module</a>
+</li>
+      </ul></li>
       <li><a href="reference.html#mailer.Mailer">Mailer (class in mailer)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="reference.html#module-mailer">mailer (module)</a>
+      <li>
+    module
+
+      <ul>
+        <li><a href="reference.html#module-api">api</a>
 </li>
+        <li><a href="reference.html#module-ftp">ftp</a>
+</li>
+        <li><a href="reference.html#module-mailer">mailer</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -263,11 +291,19 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, KIPP Bay Area Public Schools
+        
+        &copy; Copyright 2020, KIPP Public Schools Northern California
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -278,7 +314,6 @@
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

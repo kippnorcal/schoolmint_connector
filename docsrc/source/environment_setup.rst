@@ -19,6 +19,7 @@ Create .env file
 .. code-block:: text
 
     DELETE_LOCAL_FILES=
+    REJECT_EMPTY_FILES=
 
     DB_SERVER=
     DB=
@@ -56,8 +57,10 @@ Create .env file
     TO_NAME=
     TO_ADDRESS=
 
-**DELETE_LOCAL_FILES**: Keep downloaded files on the local machine or not. 
-This setting doesn't matter when using Docker. Suggested: True.
+**DELETE_LOCAL_FILES**: [1 or 0] Keep downloaded files on the local machine or not. 
+This setting doesn't matter when using Docker. Suggested: 1.
+
+**REJECT_EMPTY_FILES**: [1 or 0] Throw an error if a returned data file is empty. Suggested: 1.
 
 **DB_SERVER, DB, DB_USER, DB_PWD, DB_SCHEMA**: Variables used by 
 `sqlsorcery <https://sqlsorcery.readthedocs.io/en/latest/cookbook/environment.html>`_.

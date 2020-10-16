@@ -187,6 +187,7 @@
 <div class="section" id="create-env-file">
 <h2>Create .env file<a class="headerlink" href="#create-env-file" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>DELETE_LOCAL_FILES=
+REJECT_EMPTY_FILES=
 
 DB_SERVER=
 DB=
@@ -225,8 +226,9 @@ TO_NAME=
 TO_ADDRESS=
 </pre></div>
 </div>
-<p><strong>DELETE_LOCAL_FILES</strong>: Keep downloaded files on the local machine or not.
-This setting doesn’t matter when using Docker. Suggested: True.</p>
+<p><strong>DELETE_LOCAL_FILES</strong>: [1 or 0] Keep downloaded files on the local machine or not.
+This setting doesn’t matter when using Docker. Suggested: 1.</p>
+<p><strong>REJECT_EMPTY_FILES</strong>: [1 or 0] Throw an error if a returned data file is empty. Suggested: 1.</p>
 <p><strong>DB_SERVER, DB, DB_USER, DB_PWD, DB_SCHEMA</strong>: Variables used by
 <a class="reference external" href="https://sqlsorcery.readthedocs.io/en/latest/cookbook/environment.html">sqlsorcery</a>.</p>
 <p><strong>DB_RAW_TABLE</strong>: Name of the database table that the Application Data

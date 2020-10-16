@@ -66,10 +66,10 @@ def read_csv_to_df(csv):
         )
     df = pd.read_csv(csv, sep=",", quotechar='"', doublequote=True, dtype=str, header=0)
     count = len(df.index)
-    if count == 0:
-        raise Exception(f"ERROR: No data was loaded from CSV file '{csv}'.")
-    else:
-        logging.info(f"Read {count} rows from CSV file '{csv}'.")
+    logging.info(f"Read {count} rows from CSV file '{csv}'.")
+    if int(os.getenv("REJECT_EMPTY_FILES")):
+        if count == 0:
+            raise Exception(f"ERROR: No data was loaded from CSV file '{csv}'.")
     return df
 
 
@@ -196,7 +196,7 @@ def main():
 
         api_suffixes = os.getenv("API_SUFFIXES").split(",")
         API(api_suffixes).request_reports()
-        if eval(os.getenv("DELETE_LOCAL_FILES", "True")):
+        if int(os.getenv("DELETE_LOCAL_FILES")):
             delete_data_files(LOCALDIR)
         files = download_from_ftp(ftp)
 

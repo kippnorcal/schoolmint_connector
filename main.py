@@ -36,6 +36,9 @@ parser.add_argument("--mssql", help="Run migrations for MS SQL", action="store_t
 parser.add_argument(
     "--postgres", help="Run migrations for PostgreSQL", action="store_true"
 )
+parser.add_argument(
+    "--targets", help="Sync enrollment targets from Google Sheet", action="store_true"
+)
 args = parser.parse_args()
 
 
@@ -224,7 +227,8 @@ def main():
         process_change_tracking(conn)
         process_fact_daily_status(conn)
 
-        sync_enrollment_targets(conn, school_year)
+        if args.targets:
+            sync_enrollment_targets(conn, school_year)
 
         success_message = read_logs("app.log")
         mailer = Mailer()

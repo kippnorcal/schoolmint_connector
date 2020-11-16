@@ -7,6 +7,10 @@ Clone the repo
 
     git clone https://github.com/kippnorcal/schoolmint_connector.git
 
+Set up Google service account
+------------------------------
+This is used for connecting to the Enrollment Targets sheet.
+Follow the directions for Pygsheets service account set up `here <https://pygsheets.readthedocs.io/en/stable/authorization.html#authorizing-pygsheets>`_.
 
 FTP setup
 -----------
@@ -48,6 +52,13 @@ Create .env file
     API_DOMAIN_SUFFIX2=
     API_ACCOUNT_EMAIL_SUFFIX2=
     API_TOKEN_SUFFIX2=
+
+    # Google Developer Service Account
+    ACCOUNT_EMAIL=
+
+    # Enrollment Targets Sheet connection
+    TARGETS_SHEET_ID=
+    TARGETS_SHEET_TITLE=
 
     CURRENT_SCHOOL_YEAR=
 
@@ -93,6 +104,12 @@ If there is only one endpoint, then you only need to include the connection cred
 If there are multiple endpoints, you can repeat these three env variables with a unique suffix.
 (eg. API_DOMAIN_SUFFIX1, API_ACCOUNT_EMAIL_SUFFIX1, API_TOKEN_SUFFIX1, API_DOMAIN_SUFFIX2, API_ACCOUNT_EMAIL_SUFFIX2, API_TOKEN_SUFFIX2)
 API token must be updated from year to year because each enrollment period has a unique report.
+
+**ACCOUNT_EMAIL**: Service account email used to authorize Pygsheets
+
+**TARGETS_SHEET_ID**: ID (found in URL) of the Enrollment Targets Google Sheet
+
+**TARGETS_SHEET_TITLE**: Name of the sheet/tab which contains the Enrollment Targets
 
 **CURRENT_SCHOOL_YEAR**: 4 digit enrollment school year (eg. 2021 during the 19-20 SY). 
 This populates the SchoolYear4Digit column in the raw data tables. 

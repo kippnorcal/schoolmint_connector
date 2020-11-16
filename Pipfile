@@ -12,6 +12,7 @@ pysftp = "*"
 sqlsorcery = "==0.1.2"
 requests = "*"
 tenacity = "*"
+pygsheets = "*"
 
 [requires]
 python_version = "3.7"

@@ -8,6 +8,7 @@ import time
 import traceback
 
 import pandas as pd
+import pygsheets
 from sqlsorcery import MSSQL
 from tenacity import *
 
@@ -185,6 +186,24 @@ def process_fact_daily_status(conn):
     logging.info(f"Loaded {count} rows into Fact Daily Status table.")
 
 
+def sync_enrollment_targets(conn, school_year):
+    """
+    Pull enrollment target numbers from spreadsheet and write to ProgressMonitoring table.
+    """
+    client = pygsheets.authorize(service_file="service.json")
+    sheet = client.open_by_key(os.getenv("TARGETS_SHEET_ID"))
+    worksheet = sheet.worksheet_by_title(os.getenv("TARGETS_SHEET_TITLE"))
+    df = worksheet.get_as_df()
+    conn.engine.execute(  # drop into sqlalchemy because we are locked into an older version of sqlsorcery
+        f"""
+        DELETE FROM custom.SchoolMint_ProgressMonitoring
+        WHERE Schoolyear4digit={school_year}
+        """
+    )
+    conn.insert_into("SchoolMint_ProgressMonitoring", df)
+    logging.info(f"Loaded {len(df)} rows into Progress Monitoring table.")
+
+
 def main():
     try:
         school_year = os.getenv("CURRENT_SCHOOL_YEAR")
@@ -204,6 +223,8 @@ def main():
 
         process_change_tracking(conn)
         process_fact_daily_status(conn)
+
+        sync_enrollment_targets(conn, school_year)
 
         success_message = read_logs("app.log")
         mailer = Mailer()

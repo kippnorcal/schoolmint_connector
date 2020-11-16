@@ -110,3 +110,5 @@ venv.bak/
 sqlsorcery_local/
 files/*.csv
 .DS_Store
+service.json
+.env.dev

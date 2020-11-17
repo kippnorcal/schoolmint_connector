@@ -40,11 +40,18 @@ Run
 ----
 .. code-block:: bash
 
-    docker run -it schoolmint
+    docker run --rm -it schoolmint
 
 
 Run with volume mapping
 ------------------------
 .. code-block:: bash
 
-    docker run -it -v ${PWD}:/code/ schoolmint
+    docker run --rm -it -v ${PWD}:/code/ schoolmint
+
+
+Run with enrollment targets sync (optional)
+--------------------------------------------
+.. code-block:: bash
+
+    docker run --rm -it schoolmint --targets

@@ -98,6 +98,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#build-the-docker-image">Build the Docker image</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#run">Run</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#run-with-volume-mapping">Run with volume mapping</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-with-enrollment-targets-sync-optional">Run with enrollment targets sync (optional)</a></li>
 </ul>
 </li>
 </ul>
@@ -237,13 +238,19 @@
 </div>
 <div class="section" id="run">
 <h3>Run<a class="headerlink" href="#run" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker run -it schoolmint
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker run --rm -it schoolmint
 </pre></div>
 </div>
 </div>
 <div class="section" id="run-with-volume-mapping">
 <h3>Run with volume mapping<a class="headerlink" href="#run-with-volume-mapping" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker run -it -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>:/code/ schoolmint
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker run --rm -it -v <span class="si">${</span><span class="nv">PWD</span><span class="si">}</span>:/code/ schoolmint
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-with-enrollment-targets-sync-optional">
+<h3>Run with enrollment targets sync (optional)<a class="headerlink" href="#run-with-enrollment-targets-sync-optional" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker run --rm -it schoolmint --targets
 </pre></div>
 </div>
 </div>

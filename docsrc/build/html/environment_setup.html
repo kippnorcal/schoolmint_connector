@@ -89,6 +89,7 @@
 <li class="toctree-l2 current"><a class="reference internal" href="readme.html#environment">Environment</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Initial environment setup</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#clone-the-repo">Clone the repo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#set-up-google-service-account">Set up Google service account</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ftp-setup">FTP setup</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#create-env-file">Create .env file</a></li>
 </ul>
@@ -179,6 +180,11 @@
 </pre></div>
 </div>
 </div>
+<div class="section" id="set-up-google-service-account">
+<h2>Set up Google service account<a class="headerlink" href="#set-up-google-service-account" title="Permalink to this headline">¶</a></h2>
+<p>This is used for connecting to the Enrollment Targets sheet.
+Follow the directions for Pygsheets service account set up <a class="reference external" href="https://pygsheets.readthedocs.io/en/stable/authorization.html#authorizing-pygsheets">here</a>.</p>
+</div>
 <div class="section" id="ftp-setup">
 <h2>FTP setup<a class="headerlink" href="#ftp-setup" title="Permalink to this headline">¶</a></h2>
 <p>Create a folder named ‘archive’ within the FTP directory that SchoolMint is dropping files to.</p>
@@ -217,6 +223,13 @@ API_DOMAIN_SUFFIX2=
 API_ACCOUNT_EMAIL_SUFFIX2=
 API_TOKEN_SUFFIX2=
 
+# Google Developer Service Account
+ACCOUNT_EMAIL=
+
+# Enrollment Targets Sheet connection
+TARGETS_SHEET_ID=
+TARGETS_SHEET_TITLE=
+
 CURRENT_SCHOOL_YEAR=
 
 GMAIL_USER=
@@ -251,6 +264,9 @@ If there is only one endpoint, then you only need to include the connection cred
 If there are multiple endpoints, you can repeat these three env variables with a unique suffix.
 (eg. API_DOMAIN_SUFFIX1, API_ACCOUNT_EMAIL_SUFFIX1, API_TOKEN_SUFFIX1, API_DOMAIN_SUFFIX2, API_ACCOUNT_EMAIL_SUFFIX2, API_TOKEN_SUFFIX2)
 API token must be updated from year to year because each enrollment period has a unique report.</p>
+<p><strong>ACCOUNT_EMAIL</strong>: Service account email used to authorize Pygsheets</p>
+<p><strong>TARGETS_SHEET_ID</strong>: ID (found in URL) of the Enrollment Targets Google Sheet</p>
+<p><strong>TARGETS_SHEET_TITLE</strong>: Name of the sheet/tab which contains the Enrollment Targets</p>
 <p><strong>CURRENT_SCHOOL_YEAR</strong>: 4 digit enrollment school year (eg. 2021 during the 19-20 SY).
 This populates the SchoolYear4Digit column in the raw data tables.
 This must be updated when new reports are acquired for the next school year.</p>

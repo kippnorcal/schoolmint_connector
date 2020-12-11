@@ -229,6 +229,9 @@ def main():
 
         if args.targets:
             sync_enrollment_targets(conn, school_year)
+            conn.exec_sproc("sproc_SchoolMint_LoadTargetsWide")
+            conn.exec_sproc("sproc_Schoolmint_create_intercepts")
+            conn.exec_sproc("sproc_Schoolmint_load_Fact_PM")
 
         success_message = read_logs("app.log")
         mailer = Mailer()

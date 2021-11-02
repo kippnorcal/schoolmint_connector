@@ -225,13 +225,14 @@ def main():
         process_application_data(conn, files, school_year)
 
         process_change_tracking(conn)
-        process_fact_daily_status(conn)
 
         if args.targets:
             sync_enrollment_targets(conn, school_year)
             conn.exec_sproc("sproc_SchoolMint_LoadTargetsWide")
             conn.exec_sproc("sproc_Schoolmint_create_intercepts")
             conn.exec_sproc("sproc_Schoolmint_load_Fact_PM")
+
+        process_fact_daily_status(conn)
 
         success_message = read_logs("app.log")
         mailer = Mailer()

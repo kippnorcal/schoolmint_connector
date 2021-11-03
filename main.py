@@ -45,7 +45,7 @@ args = parser.parse_args()
 def read_logs(filename):
     """
     Read the given file.
-    
+
     :param filename: Name of the file to be read (in this case, the logs)
     :type filename: String
     :return: Contents of the file
@@ -58,7 +58,7 @@ def read_logs(filename):
 def read_csv_to_df(csv):
     """
     Read the csv into a dataframe in preparation for database load.
-    
+
     :param csv: Name of the csv file to be read into a DataFrame
     :type csv: String
     :return: Contents of the csv file
@@ -93,7 +93,7 @@ def get_latest_file(filename):
     """
     Get the file that matches the given name.
     Reverse sort by modification date in case there are multiple.
-    
+
     :param filename: Name of the file that we're looking for
     :type filename: String
     :return: Name of the most recently modified file with the given name
@@ -117,8 +117,8 @@ def get_latest_file(filename):
 @retry(wait=wait_fixed(30), stop=stop_after_attempt(60))
 def download_from_ftp(ftp):
     """
-    Download data files from FTP. It can take some time for SchoolMint 
-    to upload the reports after the API request, so we use Tenacity retry 
+    Download data files from FTP. It can take some time for SchoolMint
+    to upload the reports after the API request, so we use Tenacity retry
     to wait up to 30 min.
 
     :param ftp: FTP connection
@@ -135,7 +135,7 @@ def download_from_ftp(ftp):
 def process_application_data(conn, files, school_year):
     """
     Take application data from csv and insert into table.
-    
+
     :param conn: Database connection
     :type conn: Object
     :param file: Name of the Application Data file
@@ -168,7 +168,7 @@ def process_application_data(conn, files, school_year):
 def process_change_tracking(conn):
     """
     Execute sproc to generate change history.
-    
+
     :param conn: Database connection
     :type conn: Object
     """
@@ -180,7 +180,7 @@ def process_change_tracking(conn):
 def process_fact_daily_status(conn):
     """
     Execute sproc to generate fact daily status table.
-    
+
     :param conn: Database connection
     :type conn: Object
     """
@@ -225,13 +225,14 @@ def main():
         process_application_data(conn, files, school_year)
 
         process_change_tracking(conn)
-        process_fact_daily_status(conn)
 
         if args.targets:
             sync_enrollment_targets(conn, school_year)
             conn.exec_sproc("sproc_SchoolMint_LoadTargetsWide")
             conn.exec_sproc("sproc_Schoolmint_create_intercepts")
             conn.exec_sproc("sproc_Schoolmint_load_Fact_PM")
+
+        process_fact_daily_status(conn)
 
         success_message = read_logs("app.log")
         mailer = Mailer()

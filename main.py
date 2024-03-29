@@ -143,10 +143,11 @@ def process_application_data(conn, files, school_year):
     :param school_year: 4 digit school year
     :type school_year: String
     """
-    df = pd.DataFrame()
+    df_container = []
     for file in files:
         df_file = read_csv_to_df(f"{LOCALDIR}/{file}")
-        df = df.append(df_file)
+        df_container.append(df_file)
+    df = pd.concat(df_container)
     result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_PREP')} {school_year}")
     count = result.fetchone()[0]
     table = os.getenv("DB_RAW_TABLE")

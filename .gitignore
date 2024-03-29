@@ -104,8 +104,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-#lockfiles
-*.lock
 
 #Project Specific
 sqlsorcery_local/

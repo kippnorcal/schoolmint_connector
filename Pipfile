@@ -9,6 +9,7 @@ sphinx-rtd-theme = "*"
 
 [packages]
 pysftp = "*"
+numpy = "==1.26.4"
 pandas = "==2.0.3"
 sqlalchemy = "~=1.4"
 sqlsorcery = {extras = ["mssql"],version = "*"}

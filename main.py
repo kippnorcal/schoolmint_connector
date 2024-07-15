@@ -253,11 +253,13 @@ def main():
     except Exception as e:
         logging.exception(e)
         stack_trace = traceback.format_exc()
-        notifications.simple_email(
-            to_address=os.getenv("FAILURE_EMAIL"),
-            subject="Schoolmint Connector - Failed",
-            body="See #data_notifications for details."
-        )
+        failuer_email_address = os.getenv("FAILURE_EMAIL")
+        if failuer_email_address is not None:
+            notifications.simple_email(
+                to_address=failuer_email_address,
+                subject="Schoolmint Connector - Failed",
+                body="See #data_notifications for details."
+            )
         notifications.notify(error_message=stack_trace)
 
 

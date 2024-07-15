@@ -7,6 +7,7 @@ import sys
 import time
 import traceback
 
+from job_notifications import create_notifications
 import pandas as pd
 import pygsheets
 from sqlsorcery import MSSQL
@@ -14,7 +15,6 @@ from tenacity import *
 
 from api import API
 from ftp import FTP
-from mailer import Mailer
 from migrations import migrate_mssql, migrate_postgres
 
 LOCALDIR = "files"
@@ -40,6 +40,8 @@ parser.add_argument(
     "--targets", help="Sync enrollment targets from Google Sheet", action="store_true"
 )
 args = parser.parse_args()
+
+notifications = create_notifications("Schoomint Connector", "mailgun")
 
 
 def read_logs(filename):
@@ -126,6 +128,7 @@ def download_from_ftp(ftp):
     :return: Names of the files downloaded from the FTP
     :rtype: List
     """
+    logging.info("Attempting to download files")
     ftp.download_dir(SOURCEDIR, LOCALDIR)
     regional_file = get_latest_file("Regional Automated Application Data Raw")
     bridge_file = get_latest_file("Bridge Automated Application Data Raw")
@@ -150,6 +153,7 @@ def process_application_data(conn, files, school_year):
     df = pd.concat(df_container)
     result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_PREP')} {school_year}")
     count = result.fetchone()[0]
+    logging.info(f"Ran sproc and processed {count} records from {len(files)} files")
     table = os.getenv("DB_RAW_TABLE")
     if count == 0:
         # for 2021 enrollment period, exclude duplicate Bridge records coming from the KBA SM instance
@@ -218,9 +222,12 @@ def main():
         ftp.delete_old_archive_files(SOURCEDIR)
 
         api_suffixes = os.getenv("API_SUFFIXES").split(",")
+        logging.info("Getting API data")
         API(api_suffixes).request_reports()
         if int(os.getenv("DELETE_LOCAL_FILES")):
             delete_data_files(LOCALDIR)
+
+        logging.info("Downloading Files")
         files = download_from_ftp(ftp)
 
         process_application_data(conn, files, school_year)
@@ -228,22 +235,32 @@ def main():
         process_change_tracking(conn)
 
         if args.targets:
+            logging.info("Syncing enrollment Targets")
             sync_enrollment_targets(conn, school_year)
+            logging.info("Running Load Targets Wide Sproc")
             conn.exec_sproc("sproc_SchoolMint_LoadTargetsWide")
+            logging.info("Create Intercepts Sproc")
             conn.exec_sproc("sproc_Schoolmint_create_intercepts")
+            logging.info("Load fact PM sproc")
             conn.exec_sproc("sproc_Schoolmint_load_Fact_PM")
 
+        logging.info("Processing fact daily")
         process_fact_daily_status(conn)
 
         success_message = read_logs("app.log")
-        mailer = Mailer()
-        mailer.notify(results=success_message)
+        notifications.notify()
 
     except Exception as e:
         logging.exception(e)
         stack_trace = traceback.format_exc()
-        mailer = Mailer()
-        mailer.notify(success=False, error_message=stack_trace)
+        failuer_email_address = os.getenv("FAILURE_EMAIL")
+        if failuer_email_address is not None:
+            notifications.simple_email(
+                to_address=failuer_email_address,
+                subject="Schoolmint Connector - Failed",
+                body="See #data_notifications for details."
+            )
+        notifications.notify(error_message=stack_trace)
 
 
 if __name__ == "__main__":

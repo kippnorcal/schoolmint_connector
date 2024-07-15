@@ -7,6 +7,7 @@ import sys
 import time
 import traceback
 
+from job_notifications import create_notifications
 import pandas as pd
 import pygsheets
 from sqlsorcery import MSSQL
@@ -14,7 +15,6 @@ from tenacity import *
 
 from api import API
 from ftp import FTP
-from mailer import Mailer
 from migrations import migrate_mssql, migrate_postgres
 
 LOCALDIR = "files"
@@ -40,6 +40,8 @@ parser.add_argument(
     "--targets", help="Sync enrollment targets from Google Sheet", action="store_true"
 )
 args = parser.parse_args()
+
+notifications = create_notifications("Schoomint Connector", "mailgun")
 
 
 def read_logs(filename):
@@ -246,14 +248,17 @@ def main():
         process_fact_daily_status(conn)
 
         success_message = read_logs("app.log")
-        mailer = Mailer()
-        mailer.notify(results=success_message)
+        notifications.notify()
 
     except Exception as e:
         logging.exception(e)
         stack_trace = traceback.format_exc()
-        mailer = Mailer()
-        mailer.notify(success=False, error_message=stack_trace)
+        notifications.simple_email(
+            to_address=os.getenv("FAILURE_EMAIL"),
+            subject="Schoolmint Connector - Failed",
+            body="See #data_notifications for details."
+        )
+        notifications.notify(error_message=stack_trace)
 
 
 if __name__ == "__main__":

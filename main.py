@@ -230,43 +230,19 @@ def main():
         logging.info("Downloading Files")
         files = download_from_ftp(ftp)
 
-        process_application_data(conn, files, school_year)
 
-        process_change_tracking(conn)
-
-        if args.targets:
-            logging.info("Syncing enrollment Targets")
-            sync_enrollment_targets(conn, school_year)
-            logging.info("Running Load Targets Wide Sproc")
-            conn.exec_sproc("sproc_SchoolMint_LoadTargetsWide")
-            logging.info("Create Intercepts Sproc")
-            conn.exec_sproc("sproc_Schoolmint_create_intercepts")
-            logging.info("Load fact PM sproc")
-            conn.exec_sproc("sproc_Schoolmint_load_Fact_PM")
-
-        logging.info("Processing fact daily")
-        process_fact_daily_status(conn)
-
-        success_message = read_logs("app.log")
+if __name__ == "__main__":
+    try:
+        main()
         notifications.notify()
-
     except Exception as e:
         logging.exception(e)
         stack_trace = traceback.format_exc()
-        failuer_email_address = os.getenv("FAILURE_EMAIL")
-        if failuer_email_address is not None:
+        failure_email_address = os.getenv("FAILURE_EMAIL")
+        if failure_email_address is not None:
             notifications.simple_email(
-                to_address=failuer_email_address,
+                to_address=failure_email_address,
                 subject="Schoolmint Connector - Failed",
                 body="See #data_notifications for details."
             )
         notifications.notify(error_message=stack_trace)
-
-
-if __name__ == "__main__":
-    if args.mssql:
-        migrate_mssql()
-    elif args.postgres:
-        migrate_postgres()
-    else:
-        main()

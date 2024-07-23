@@ -1,21 +1,18 @@
 import argparse
-import datetime as dt
-import glob
 import logging
 import os
 import sys
-import time
 import traceback
 
+from job_notifications import create_notifications
 import pandas as pd
 import pygsheets
-from sqlsorcery import MSSQL
 from tenacity import *
 
 from api import API
 from ftp import FTP
-from mailer import Mailer
 from migrations import migrate_mssql, migrate_postgres
+from data_warehouse_connection import DataWarehouseConnector
 
 LOCALDIR = "files"
 SOURCEDIR = "schoolmint"
@@ -41,6 +38,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+notifications = create_notifications("Schoolmint", "mailgun", logs="app.log")
 
 def read_logs(filename):
     """
@@ -223,27 +221,33 @@ def main():
             delete_data_files(LOCALDIR)
         files = download_from_ftp(ftp)
 
-        process_application_data(conn, files, school_year)
+        process_application_data(dw_conn, files, school_year)
 
-        process_change_tracking(conn)
+        process_change_tracking(dw_conn)
 
         if args.targets:
-            sync_enrollment_targets(conn, school_year)
-            conn.exec_sproc("sproc_SchoolMint_LoadTargetsWide")
-            conn.exec_sproc("sproc_Schoolmint_create_intercepts")
-            conn.exec_sproc("sproc_Schoolmint_load_Fact_PM")
+            sync_enrollment_targets(dw_conn, school_year)
+            logging.info(f"Running sproc_SchoolMint_LoadTargetsWide")
+            dw_conn.exec_sproc("sproc_SchoolMint_LoadTargetsWide")
+            logging.info(f"Running sproc_Schoolmint_create_intercepts")
+            dw_conn.exec_sproc("sproc_Schoolmint_create_intercepts")
+            logging.info(f"Running sproc_Schoolmint_load_Fact_PM")
+            dw_conn.exec_sproc("sproc_Schoolmint_load_Fact_PM")
 
-        process_fact_daily_status(conn)
+        process_fact_daily_status(dw_conn)
 
-        success_message = read_logs("app.log")
-        mailer = Mailer()
-        mailer.notify(results=success_message)
+        notifications.notify()
 
     except Exception as e:
         logging.exception(e)
         stack_trace = traceback.format_exc()
-        mailer = Mailer()
-        mailer.notify(success=False, error_message=stack_trace)
+        notifications.simple_email(
+            to_address=os.getenv("FAILURE_EMAIL"),
+            from_address=os.getenv("FROM_ADDRESS"),
+            subject="Schoolmint Connector Failed",
+            body="See data notifications channel for more details",
+        )
+        notifications.notify(error_message=stack_trace)
 
 
 if __name__ == "__main__":

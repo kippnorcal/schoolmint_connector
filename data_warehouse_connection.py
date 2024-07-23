@@ -28,7 +28,6 @@ class DataWarehouseConnector:
         self.schema = schema or getenv("MS_SCHEMA") or getenv("DB_SCHEMA") or "dbo"
         self.driver = driver or getenv("MS_DRIVER") or self._get_driver()
         cstr = f"mssql+pyodbc://{self.user}:{self.pwd}@{self.server}:{self.port}/{self.db}?driver={self.driver}"
-        logging.info(cstr)
         self.engine = create_engine(cstr, fast_executemany=True)
 
     @staticmethod

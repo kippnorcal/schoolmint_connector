@@ -147,7 +147,6 @@ def process_application_data(dw_conn, files, school_year):
     df = pd.concat(df_container, ignore_index=True)
     # df.to_csv("files/data.csv")
     result = dw_conn.exec_sproc(f"{os.getenv('SPROC_RAW_PREP')}")
-    logging.info(type(result))
     # count = result.fetchone()[0]
     count = 0
     table = os.getenv("DB_RAW_TABLE")

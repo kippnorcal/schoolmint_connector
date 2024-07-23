@@ -130,7 +130,7 @@ def download_from_ftp(ftp):
     return [regional_file, bridge_file]
 
 
-def process_application_data(conn, files, school_year):
+def process_application_data(dw_conn, files, school_year):
     """
     Take application data from csv and insert into table.
 
@@ -145,9 +145,12 @@ def process_application_data(conn, files, school_year):
     for file in files:
         df_file = read_csv_to_df(f"{LOCALDIR}/{file}")
         df_container.append(df_file)
-    df = pd.concat(df_container)
-    result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_PREP')} {school_year}")
-    count = result.fetchone()[0]
+    df = pd.concat(df_container, ignore_index=True)
+    # df.to_csv("files/data.csv")
+    result = dw_conn.exec_sproc(f"{os.getenv('SPROC_RAW_PREP')}")
+    logging.info(type(result))
+    # count = result.fetchone()[0]
+    count = 0
     table = os.getenv("DB_RAW_TABLE")
     if count == 0:
         # for 2021 enrollment period, exclude duplicate Bridge records coming from the KBA SM instance
@@ -155,61 +158,67 @@ def process_application_data(conn, files, school_year):
         # TODO review for future years to see if this needs to stay
         bridge_id = "164"
         df = df.loc[df["School_Applying_to"] != bridge_id]
-        conn.insert_into(table, df)
-        result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_POST')} {school_year}")
-        result_set = result.fetchone()
-        logging.info(f"Loaded {result_set[1]} rows into backup table '{table}_backup'.")
-        logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
+        dw_conn.insert_into(table, df)
+        result = dw_conn.exec_sproc(f"{os.getenv('SPROC_RAW_POST')}")
+        # result_set = result.fetchone()
+        # logging.info(f"Loaded {result_set[1]} rows into backup table '{table}_backup'.")
+        # logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
     else:
         raise Exception(f"ERROR: Table {table} was not truncated.")
 
 
-def process_change_tracking(conn):
+def process_change_tracking(dw_conn):
     """
     Execute sproc to generate change history.
 
-    :param conn: Database connection
-    :type conn: Object
+    :param dw_conn: Database connection
+    :type dw_conn: Object
     """
-    result = conn.exec_sproc(os.getenv("SPROC_CHANGE_TRACK"))
-    count = result.fetchone()[0]
-    logging.info(f"Loaded {count} rows into Change History table.")
+    logging.info(f"Running {os.getenv('SPROC_CHANGE_TRACK')}")
+    result = dw_conn.exec_sproc(os.getenv("SPROC_CHANGE_TRACK"))
+    # count = result.fetchone()[0]
+    # logging.info(f"Loaded {count} rows into Change History table.")
+    logging.info(f"Loaded rows rows into Change History table.")
 
 
-def process_fact_daily_status(conn):
+def process_fact_daily_status(dw_conn):
     """
     Execute sproc to generate fact daily status table.
 
-    :param conn: Database connection
-    :type conn: Object
+    :param dw_conn: Database connection
+    :type dw_conn: Object
     """
-    result = conn.exec_sproc(os.getenv("SPROC_FACT_DAILY"))
-    count = result.fetchone()[0]
-    logging.info(f"Loaded {count} rows into Fact Daily Status table.")
+    logging.info(f"Running {os.getenv('SPROC_FACT_DAILY')}")
+    result = dw_conn.exec_sproc(os.getenv("SPROC_FACT_DAILY"))
+    # count = result.fetchone()[0]
+    # logging.info(f"Loaded {count} rows into Fact Daily Status table.")
+    logging.info(f"Loaded rows into Fact Daily Status table.")
 
 
-def sync_enrollment_targets(conn, school_year):
+def sync_enrollment_targets(dw_conn, school_year):
     """
     Pull enrollment target numbers from spreadsheet and write to ProgressMonitoring table.
     """
+    logging.info(f"Running sync_enrollment_targets func")
     client = pygsheets.authorize(service_file="service.json")
     sheet = client.open_by_key(os.getenv("TARGETS_SHEET_ID"))
     worksheet = sheet.worksheet_by_title(os.getenv("TARGETS_SHEET_TITLE"))
     df = worksheet.get_as_df()
-    conn.engine.execute(  # drop into sqlalchemy because we are locked into an older version of sqlsorcery
+    pd.to_datetime(df["Goal_date"])
+    dw_conn.exec_cmd(  # drop into sqlalchemy because we are locked into an older version of sqlsorcery
         f"""
         DELETE FROM custom.SchoolMint_ProgressMonitoring
         WHERE Schoolyear4digit={school_year}
         """
     )
-    conn.insert_into("SchoolMint_ProgressMonitoring", df)
+    dw_conn.insert_into("SchoolMint_ProgressMonitoring", df)
     logging.info(f"Loaded {len(df)} rows into Progress Monitoring table.")
 
 
 def main():
     try:
         school_year = os.getenv("CURRENT_SCHOOL_YEAR")
-        conn = MSSQL()
+        dw_conn = DataWarehouseConnector()
         ftp = FTP()
 
         ftp.archive_remote_files(SOURCEDIR)

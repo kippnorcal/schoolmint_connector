@@ -11,7 +11,6 @@ from tenacity import *
 
 from api import API
 from ftp import FTP
-from migrations import migrate_mssql, migrate_postgres
 from data_warehouse_connection import DataWarehouseConnector
 
 LOCALDIR = "files"
@@ -260,9 +259,4 @@ def main():
 
 
 if __name__ == "__main__":
-    if args.mssql:
-        migrate_mssql()
-    elif args.postgres:
-        migrate_postgres()
-    else:
-        main()
+    main()

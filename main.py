@@ -13,6 +13,7 @@ from api import API
 from ftp import FTP
 from data_warehouse_connection import DataWarehouseConnector
 
+
 LOCALDIR = "files"
 SOURCEDIR = "schoolmint"
 
@@ -123,6 +124,7 @@ def download_from_ftp(ftp):
     :return: Names of the files downloaded from the FTP
     :rtype: List
     """
+    logging.info("Attempting to download files")
     ftp.download_dir(SOURCEDIR, LOCALDIR)
     regional_file = get_latest_file("Regional Automated Application Data Raw")
     bridge_file = get_latest_file("Bridge Automated Application Data Raw")
@@ -223,9 +225,12 @@ def main():
         ftp.delete_old_archive_files(SOURCEDIR)
 
         api_suffixes = os.getenv("API_SUFFIXES").split(",")
+        logging.info("Getting API data")
         API(api_suffixes).request_reports()
         if int(os.getenv("DELETE_LOCAL_FILES")):
             delete_data_files(LOCALDIR)
+
+        logging.info("Downloading Files")
         files = download_from_ftp(ftp)
 
         process_application_data(dw_conn, files, school_year)

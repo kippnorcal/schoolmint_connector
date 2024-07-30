@@ -1,21 +1,18 @@
 import argparse
-import datetime as dt
-import glob
 import logging
 import os
 import sys
-import time
 import traceback
 
 from job_notifications import create_notifications
 import pandas as pd
 import pygsheets
-from sqlsorcery import MSSQL
 from tenacity import *
 
 from api import API
 from ftp import FTP
-from migrations import migrate_mssql, migrate_postgres
+from data_warehouse_connection import DataWarehouseConnector
+
 
 LOCALDIR = "files"
 SOURCEDIR = "schoolmint"
@@ -41,8 +38,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-notifications = create_notifications("Schoomint Connector", "mailgun")
-
+notifications = create_notifications("Schoolmint", "mailgun", logs="app.log")
 
 def read_logs(filename):
     """
@@ -135,7 +131,7 @@ def download_from_ftp(ftp):
     return [regional_file, bridge_file]
 
 
-def process_application_data(conn, files, school_year):
+def process_application_data(dw_conn, files, school_year):
     """
     Take application data from csv and insert into table.
 
@@ -150,10 +146,11 @@ def process_application_data(conn, files, school_year):
     for file in files:
         df_file = read_csv_to_df(f"{LOCALDIR}/{file}")
         df_container.append(df_file)
-    df = pd.concat(df_container)
-    result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_PREP')} {school_year}")
-    count = result.fetchone()[0]
-    logging.info(f"Ran sproc and processed {count} records from {len(files)} files")
+    df = pd.concat(df_container, ignore_index=True)
+    # df.to_csv("files/data.csv")
+    result = dw_conn.exec_sproc(f"{os.getenv('SPROC_RAW_PREP')}")
+    # count = result.fetchone()[0]
+    count = 0
     table = os.getenv("DB_RAW_TABLE")
     if count == 0:
         # for 2021 enrollment period, exclude duplicate Bridge records coming from the KBA SM instance
@@ -161,61 +158,67 @@ def process_application_data(conn, files, school_year):
         # TODO review for future years to see if this needs to stay
         bridge_id = "164"
         df = df.loc[df["School_Applying_to"] != bridge_id]
-        conn.insert_into(table, df)
-        result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_POST')} {school_year}")
-        result_set = result.fetchone()
-        logging.info(f"Loaded {result_set[1]} rows into backup table '{table}_backup'.")
-        logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
+        dw_conn.insert_into(table, df)
+        result = dw_conn.exec_sproc(f"{os.getenv('SPROC_RAW_POST')}")
+        # result_set = result.fetchone()
+        # logging.info(f"Loaded {result_set[1]} rows into backup table '{table}_backup'.")
+        # logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
     else:
         raise Exception(f"ERROR: Table {table} was not truncated.")
 
 
-def process_change_tracking(conn):
+def process_change_tracking(dw_conn):
     """
     Execute sproc to generate change history.
 
-    :param conn: Database connection
-    :type conn: Object
+    :param dw_conn: Database connection
+    :type dw_conn: Object
     """
-    result = conn.exec_sproc(os.getenv("SPROC_CHANGE_TRACK"))
-    count = result.fetchone()[0]
-    logging.info(f"Loaded {count} rows into Change History table.")
+    logging.info(f"Running {os.getenv('SPROC_CHANGE_TRACK')}")
+    result = dw_conn.exec_sproc(os.getenv("SPROC_CHANGE_TRACK"))
+    # count = result.fetchone()[0]
+    # logging.info(f"Loaded {count} rows into Change History table.")
+    logging.info(f"Loaded rows rows into Change History table.")
 
 
-def process_fact_daily_status(conn):
+def process_fact_daily_status(dw_conn):
     """
     Execute sproc to generate fact daily status table.
 
-    :param conn: Database connection
-    :type conn: Object
+    :param dw_conn: Database connection
+    :type dw_conn: Object
     """
-    result = conn.exec_sproc(os.getenv("SPROC_FACT_DAILY"))
-    count = result.fetchone()[0]
-    logging.info(f"Loaded {count} rows into Fact Daily Status table.")
+    logging.info(f"Running {os.getenv('SPROC_FACT_DAILY')}")
+    result = dw_conn.exec_sproc(os.getenv("SPROC_FACT_DAILY"))
+    # count = result.fetchone()[0]
+    # logging.info(f"Loaded {count} rows into Fact Daily Status table.")
+    logging.info(f"Loaded rows into Fact Daily Status table.")
 
 
-def sync_enrollment_targets(conn, school_year):
+def sync_enrollment_targets(dw_conn, school_year):
     """
     Pull enrollment target numbers from spreadsheet and write to ProgressMonitoring table.
     """
+    logging.info(f"Running sync_enrollment_targets func")
     client = pygsheets.authorize(service_file="service.json")
     sheet = client.open_by_key(os.getenv("TARGETS_SHEET_ID"))
     worksheet = sheet.worksheet_by_title(os.getenv("TARGETS_SHEET_TITLE"))
     df = worksheet.get_as_df()
-    conn.engine.execute(  # drop into sqlalchemy because we are locked into an older version of sqlsorcery
+    pd.to_datetime(df["Goal_date"])
+    dw_conn.exec_cmd(  # drop into sqlalchemy because we are locked into an older version of sqlsorcery
         f"""
         DELETE FROM custom.SchoolMint_ProgressMonitoring
         WHERE Schoolyear4digit={school_year}
         """
     )
-    conn.insert_into("SchoolMint_ProgressMonitoring", df)
+    dw_conn.insert_into("SchoolMint_ProgressMonitoring", df)
     logging.info(f"Loaded {len(df)} rows into Progress Monitoring table.")
 
 
 def main():
     try:
         school_year = os.getenv("CURRENT_SCHOOL_YEAR")
-        conn = MSSQL()
+        dw_conn = DataWarehouseConnector()
         ftp = FTP()
 
         ftp.archive_remote_files(SOURCEDIR)
@@ -230,43 +233,34 @@ def main():
         logging.info("Downloading Files")
         files = download_from_ftp(ftp)
 
-        process_application_data(conn, files, school_year)
+        process_application_data(dw_conn, files, school_year)
 
-        process_change_tracking(conn)
+        process_change_tracking(dw_conn)
 
         if args.targets:
-            logging.info("Syncing enrollment Targets")
-            sync_enrollment_targets(conn, school_year)
-            logging.info("Running Load Targets Wide Sproc")
-            conn.exec_sproc("sproc_SchoolMint_LoadTargetsWide")
-            logging.info("Create Intercepts Sproc")
-            conn.exec_sproc("sproc_Schoolmint_create_intercepts")
-            logging.info("Load fact PM sproc")
-            conn.exec_sproc("sproc_Schoolmint_load_Fact_PM")
+            sync_enrollment_targets(dw_conn, school_year)
+            logging.info(f"Running sproc_SchoolMint_LoadTargetsWide")
+            dw_conn.exec_sproc("sproc_SchoolMint_LoadTargetsWide")
+            logging.info(f"Running sproc_Schoolmint_create_intercepts")
+            dw_conn.exec_sproc("sproc_Schoolmint_create_intercepts")
+            logging.info(f"Running sproc_Schoolmint_load_Fact_PM")
+            dw_conn.exec_sproc("sproc_Schoolmint_load_Fact_PM")
 
-        logging.info("Processing fact daily")
-        process_fact_daily_status(conn)
+        process_fact_daily_status(dw_conn)
 
-        success_message = read_logs("app.log")
         notifications.notify()
 
     except Exception as e:
         logging.exception(e)
         stack_trace = traceback.format_exc()
-        failuer_email_address = os.getenv("FAILURE_EMAIL")
-        if failuer_email_address is not None:
-            notifications.simple_email(
-                to_address=failuer_email_address,
-                subject="Schoolmint Connector - Failed",
-                body="See #data_notifications for details."
-            )
+        notifications.simple_email(
+            to_address=os.getenv("FAILURE_EMAIL"),
+            from_address=os.getenv("FROM_ADDRESS"),
+            subject="Schoolmint Connector Failed",
+            body="See data notifications channel for more details",
+        )
         notifications.notify(error_message=stack_trace)
 
 
 if __name__ == "__main__":
-    if args.mssql:
-        migrate_mssql()
-    elif args.postgres:
-        migrate_postgres()
-    else:
-        main()
+    main()

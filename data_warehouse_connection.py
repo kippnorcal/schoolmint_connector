@@ -52,7 +52,7 @@ class DataWarehouseConnector:
             df.to_sql(name=table, schema=self.schema, con=connection, if_exists=if_exists, chunksize=chunksize, dtype=dtype, index=False)
 
     def exec_cmd(self, command):
-        with self.engine.connect() as conn:
+        with self.engine.begin() as conn:
             command = sa_text(command)
             result = conn.execute(command)
         return result

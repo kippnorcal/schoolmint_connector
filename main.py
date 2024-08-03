@@ -34,7 +34,7 @@ parser = argparse.ArgumentParser(description="Additional migration options")
 parser.add_argument("--school-year", dest="school_year", help="School year in YYYY format; ex. '2025'", nargs=1)
 args = parser.parse_args()
 
-notifications = create_notifications("Schoomint Connector", "mailgun")
+notifications = create_notifications("BigQuery Dev: Schoomint Connector", "mailgun")
 
 
 def read_logs(filename):
@@ -255,10 +255,11 @@ if __name__ == "__main__":
         logging.exception(e)
         stack_trace = traceback.format_exc()
         failure_email_address = os.getenv("FAILURE_EMAIL")
-        if failure_email_address is not None:
-            notifications.simple_email(
-                to_address=failure_email_address,
-                subject="Schoolmint Connector - Failed",
-                body="See #data_notifications for details."
-            )
+        # if failure_email_address is not None:
+        #     notifications.simple_email(
+        #         from_address=os.getenv("FROM_ADDRESS"),
+        #         to_address=failure_email_address,
+        #         subject="Schoolmint Connector - Failed",
+        #         body="See #data_notifications for details."
+        #     )
         notifications.notify(error_message=stack_trace)

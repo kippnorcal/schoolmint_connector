@@ -9,13 +9,16 @@ sphinx-rtd-theme = "*"
 
 [packages]
 pysftp = "*"
-pandas = "==2.0.3"
-sqlalchemy = "~=1.4"
-sqlsorcery = {extras = ["mssql"],version = "*"}
+numpy = "==1.26.4"
+pandas = "*"
+sqlalchemy = "*"
+google-auth-httplib2 = "*"
+google-auth-oauthlib = "*"
 requests = "*"
 tenacity = "*"
 pygsheets = "*"
 job-notifications = "*"
+google-cloud-storage = "*"
 
 [requires]
 python_version = "3.10"

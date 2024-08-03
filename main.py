@@ -31,13 +31,7 @@ logging.basicConfig(
 logging.getLogger("paramiko").setLevel(logging.ERROR)
 
 parser = argparse.ArgumentParser(description="Additional migration options")
-parser.add_argument("--mssql", help="Run migrations for MS SQL", action="store_true")
-parser.add_argument(
-    "--postgres", help="Run migrations for PostgreSQL", action="store_true"
-)
-parser.add_argument(
-    "--targets", help="Sync enrollment targets from Google Sheet", action="store_true"
-)
+parser.add_argument("--school-year", dest="school_year", help="School year in YYYY format; ex. '2025'", nargs=1)
 args = parser.parse_args()
 
 notifications = create_notifications("Schoomint Connector", "mailgun")

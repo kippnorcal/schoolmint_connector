@@ -205,23 +205,46 @@ def sync_enrollment_targets(conn, school_year):
     logging.info(f"Loaded {len(df)} rows into Progress Monitoring table.")
 
 
+def prep_files_for_upload(files) -> pd. DataFrame:
+    """
+    Take application data from csv and insert into table.
+
+    :param conn: Database connection
+    :type conn: Object
+    :param file: Name of the Application Data file
+    :type file: String
+    :param school_year: 4 digit school year
+    :type school_year: String
+    """
+    df_container = []
+    for file in files:
+        df_file = read_csv_to_df(f"{LOCALDIR}/{file}")
+        df_container.append(df_file)
+    df = pd.concat(df_container)
+    return df
+
+
 def main():
-    try:
-        school_year = os.getenv("CURRENT_SCHOOL_YEAR")
-        conn = MSSQL()
-        ftp = FTP()
+    school_year = args.school_year
+    ftp = FTP()
 
-        ftp.archive_remote_files(SOURCEDIR)
-        ftp.delete_old_archive_files(SOURCEDIR)
+    ftp.archive_remote_files(SOURCEDIR)
+    ftp.delete_old_archive_files(SOURCEDIR)
 
-        api_suffixes = os.getenv("API_SUFFIXES").split(",")
-        logging.info("Getting API data")
-        API(api_suffixes).request_reports()
-        if int(os.getenv("DELETE_LOCAL_FILES")):
-            delete_data_files(LOCALDIR)
+    api_suffixes = os.getenv("API_SUFFIXES").split(",")
+    logging.info("Getting API data")
+    API(api_suffixes).request_reports()
+    if int(os.getenv("DELETE_LOCAL_FILES")):
+        delete_data_files(LOCALDIR)
 
-        logging.info("Downloading Files")
-        files = download_from_ftp(ftp)
+    logging.info("Downloading Files")
+    files = download_from_ftp(ftp)
+    joined_files = prep_files_for_upload(files)
+
+    blob_name = f"schoolmint/schoolmint_raw_data_{school_year}.csv"
+    gcc = GoogleCloudConnection()
+    bucket = os.getenv("BUCKET")
+    gcc.load_dataframe_to_cloud(bucket, blob_name, joined_files)
 
 
 if __name__ == "__main__":

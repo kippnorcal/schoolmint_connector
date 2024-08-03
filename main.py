@@ -10,12 +10,11 @@ import traceback
 from job_notifications import create_notifications
 import pandas as pd
 import pygsheets
-from sqlsorcery import MSSQL
 from tenacity import *
 
 from api import API
 from ftp import FTP
-from migrations import migrate_mssql, migrate_postgres
+from google_cloud_connections import GoogleCloudConnection
 
 LOCALDIR = "files"
 SOURCEDIR = "schoolmint"

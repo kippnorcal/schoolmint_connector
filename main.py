@@ -37,19 +37,6 @@ args = parser.parse_args()
 notifications = create_notifications("BigQuery Dev: Schoomint Connector", "mailgun")
 
 
-def read_logs(filename):
-    """
-    Read the given file.
-
-    :param filename: Name of the file to be read (in this case, the logs)
-    :type filename: String
-    :return: Contents of the file
-    :rtype: String
-    """
-    with open(filename) as f:
-        return f.read()
-
-
 def read_csv_to_df(csv):
     """
     Read the csv into a dataframe in preparation for database load.
@@ -126,83 +113,6 @@ def download_from_ftp(ftp):
     regional_file = get_latest_file("Regional Automated Application Data Raw")
     bridge_file = get_latest_file("Bridge Automated Application Data Raw")
     return [regional_file, bridge_file]
-
-
-def process_application_data(conn, files, school_year):
-    """
-    Take application data from csv and insert into table.
-
-    :param conn: Database connection
-    :type conn: Object
-    :param file: Name of the Application Data file
-    :type file: String
-    :param school_year: 4 digit school year
-    :type school_year: String
-    """
-    df_container = []
-    for file in files:
-        df_file = read_csv_to_df(f"{LOCALDIR}/{file}")
-        df_container.append(df_file)
-    df = pd.concat(df_container)
-    result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_PREP')} {school_year}")
-    count = result.fetchone()[0]
-    logging.info(f"Ran sproc and processed {count} records from {len(files)} files")
-    table = os.getenv("DB_RAW_TABLE")
-    if count == 0:
-        # for 2021 enrollment period, exclude duplicate Bridge records coming from the KBA SM instance
-        # all of these records (and more) are already found in the Oakland Enrolls instance
-        # TODO review for future years to see if this needs to stay
-        bridge_id = "164"
-        df = df.loc[df["School_Applying_to"] != bridge_id]
-        conn.insert_into(table, df)
-        result = conn.exec_sproc(f"{os.getenv('SPROC_RAW_POST')} {school_year}")
-        result_set = result.fetchone()
-        logging.info(f"Loaded {result_set[1]} rows into backup table '{table}_backup'.")
-        logging.info(f"Loaded {result_set[0]} rows into table '{table}''.")
-    else:
-        raise Exception(f"ERROR: Table {table} was not truncated.")
-
-
-def process_change_tracking(conn):
-    """
-    Execute sproc to generate change history.
-
-    :param conn: Database connection
-    :type conn: Object
-    """
-    result = conn.exec_sproc(os.getenv("SPROC_CHANGE_TRACK"))
-    count = result.fetchone()[0]
-    logging.info(f"Loaded {count} rows into Change History table.")
-
-
-def process_fact_daily_status(conn):
-    """
-    Execute sproc to generate fact daily status table.
-
-    :param conn: Database connection
-    :type conn: Object
-    """
-    result = conn.exec_sproc(os.getenv("SPROC_FACT_DAILY"))
-    count = result.fetchone()[0]
-    logging.info(f"Loaded {count} rows into Fact Daily Status table.")
-
-
-def sync_enrollment_targets(conn, school_year):
-    """
-    Pull enrollment target numbers from spreadsheet and write to ProgressMonitoring table.
-    """
-    client = pygsheets.authorize(service_file="service.json")
-    sheet = client.open_by_key(os.getenv("TARGETS_SHEET_ID"))
-    worksheet = sheet.worksheet_by_title(os.getenv("TARGETS_SHEET_TITLE"))
-    df = worksheet.get_as_df()
-    conn.engine.execute(  # drop into sqlalchemy because we are locked into an older version of sqlsorcery
-        f"""
-        DELETE FROM custom.SchoolMint_ProgressMonitoring
-        WHERE Schoolyear4digit={school_year}
-        """
-    )
-    conn.insert_into("SchoolMint_ProgressMonitoring", df)
-    logging.info(f"Loaded {len(df)} rows into Progress Monitoring table.")
 
 
 def prep_files_for_upload(files) -> pd. DataFrame:

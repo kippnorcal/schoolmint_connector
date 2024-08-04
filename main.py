@@ -31,7 +31,7 @@ logging.basicConfig(
 logging.getLogger("paramiko").setLevel(logging.ERROR)
 
 parser = argparse.ArgumentParser(description="Additional migration options")
-parser.add_argument("--school-year", dest="school_year", help="School year in YYYY format; ex. '2025'", nargs=1)
+parser.add_argument("--school-year", dest="school_year", help="School year in YYYY format; ex. '2025'")
 args = parser.parse_args()
 
 notifications = create_notifications("BigQuery Dev: Schoomint Connector", "mailgun")

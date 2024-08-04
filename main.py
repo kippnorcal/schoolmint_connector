@@ -13,6 +13,7 @@ import pygsheets
 from tenacity import *
 
 from api import API
+from dbt_connector import DbtConnector
 from ftp import FTP
 from google_cloud_connections import GoogleCloudConnection
 
@@ -155,6 +156,11 @@ def main():
     gcc = GoogleCloudConnection()
     bucket = os.getenv("BUCKET")
     gcc.load_dataframe_to_cloud(bucket, blob_name, joined_files)
+
+    logging.info("Running dbt snapshot")
+    job_id = os.getenv("DBT_SNAPSHOT_JOB_ID")
+    dbt_conn = DbtConnector()
+    dbt_conn.run_job(job_id)
 
 
 if __name__ == "__main__":

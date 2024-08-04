@@ -158,9 +158,8 @@ def main():
     gcc.load_dataframe_to_cloud(bucket, blob_name, joined_files)
 
     logging.info("Running dbt snapshot")
-    job_id = os.getenv("DBT_SNAPSHOT_JOB_ID")
     dbt_conn = DbtConnector()
-    dbt_conn.run_job(job_id)
+    dbt_conn.run_job()
 
 
 if __name__ == "__main__":

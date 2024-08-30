@@ -7,7 +7,7 @@ import requests
 class API:
     """Class for the SchoolMint API connection."""
 
-    def __init__(self, env_suffixes=[""]):
+    def __init__(self, env_suffixes: list):
         """Initialize environment variables used to connect to the API."""
         self.endpoints = []
         for suffix in env_suffixes:
@@ -37,13 +37,13 @@ class API:
         if response.ok:
             j_data = json.loads(response.content.decode())
             logging.info(
-                "API Token: " + api_token + " - Status: " + str(j_data["status"])
+                "Success: " + domain + " - Status: " + str(j_data["status"])
             )
         else:
             j_data = json.loads(response.content.decode())
             logging.info(
-                "API Token: "
-                + api_token
+                "Failed: "
+                + domain
                 + " - Error Code: "
                 + str(j_data["error_code"])
             )

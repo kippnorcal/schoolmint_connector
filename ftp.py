@@ -49,8 +49,8 @@ class FTP:
         :param localdir: Path of the local directory that we are saving files to
         :type localdir: String
         """
-        # 3 is the number of files plus the archive directory
-        if len(self.ftpsrv.listdir(remotepath=remotedir)) >= 3:
+        # 2 is the number of files plus the archive directory
+        if len(self.ftpsrv.listdir(remotepath=remotedir)) >= 2:
             time.sleep(30)  # wait to allow the files to finish uploading
             self.ftpsrv.get_d(remotedir, localdir, preserve_mtime=True)
 

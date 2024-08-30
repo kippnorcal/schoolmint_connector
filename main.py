@@ -127,8 +127,7 @@ def download_from_ftp(ftp):
     logging.info("Attempting to download files")
     ftp.download_dir(SOURCEDIR, LOCALDIR)
     regional_file = get_latest_file("Regional Automated Application Data Raw")
-    bridge_file = get_latest_file("Bridge Automated Application Data Raw")
-    return [regional_file, bridge_file]
+    return [regional_file]
 
 
 def process_application_data(dw_conn, files, school_year):
@@ -224,7 +223,7 @@ def main():
         ftp.archive_remote_files(SOURCEDIR)
         ftp.delete_old_archive_files(SOURCEDIR)
 
-        api_suffixes = os.getenv("API_SUFFIXES").split(",")
+        api_suffixes = [os.getenv("API_SUFFIXES")]
         logging.info("Getting API data")
         API(api_suffixes).request_reports()
         if int(os.getenv("DELETE_LOCAL_FILES")):

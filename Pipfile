@@ -19,6 +19,7 @@ tenacity = "*"
 pygsheets = "*"
 job-notifications = "*"
 google-cloud-storage = "*"
+gbq-connector = "*"
 
 [requires]
 python_version = "3.10"

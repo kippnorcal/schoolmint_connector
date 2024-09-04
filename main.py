@@ -11,6 +11,7 @@ from job_notifications import create_notifications
 import pandas as pd
 import pygsheets
 from tenacity import *
+from gbq_connector import GBQConnectionClient
 
 from api import API
 from dbt_connector import DbtConnector
@@ -152,10 +153,11 @@ def main():
     files = download_from_ftp(ftp)
     joined_files = prep_files_for_upload(files)
 
+    gbq_conn = GBQConnectionClient()
+
     blob_name = f"schoolmint/schoolmint_raw_data_{school_year}.csv"
-    gcc = GoogleCloudConnection()
     bucket = os.getenv("BUCKET")
-    gcc.load_dataframe_to_cloud(bucket, blob_name, joined_files)
+    gbq_conn.load_dataframe_to_cloud(bucket, blob_name, joined_files)
 
     logging.info("Running dbt snapshot")
     dbt_conn = DbtConnector()

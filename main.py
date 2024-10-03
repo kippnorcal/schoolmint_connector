@@ -14,10 +14,8 @@ from tenacity import *
 from gbq_connector import CloudStorageClient
 from gbq_connector import DbtClient
 
-from api import API
-from dbt_connector import DbtConnector
+from schoolmint_api import SchoolmintAPI
 from ftp import FTP
-from google_cloud_connections import GoogleCloudConnection
 
 LOCALDIR = "files"
 SOURCEDIR = "schoolmint"
@@ -133,7 +131,7 @@ def main():
 
     api_suffixes = os.getenv("API_SUFFIXES").split(",")
     logging.info("Getting API data")
-    API(api_suffixes).request_reports()
+    SchoolmintAPI(api_suffixes).request_reports()
     if int(os.getenv("DELETE_LOCAL_FILES")):
         delete_data_files(LOCALDIR)
 

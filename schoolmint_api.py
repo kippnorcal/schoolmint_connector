@@ -4,7 +4,7 @@ import os
 import requests
 
 
-class API:
+class SchoolmintAPI:
     """Class for the SchoolMint API connection."""
 
     def __init__(self, env_suffixes=[""]):

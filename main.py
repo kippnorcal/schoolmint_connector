@@ -11,7 +11,8 @@ from job_notifications import create_notifications
 import pandas as pd
 import pygsheets
 from tenacity import *
-from gbq_connector import GBQConnectionClient
+from gbq_connector import CloudStorageClient
+from gbq_connector import DbtClient
 
 from api import API
 from dbt_connector import DbtConnector
@@ -61,7 +62,7 @@ def read_csv_to_df(csv):
     return df
 
 
-def delete_data_files(directory):
+def delete_data_files(directory) -> None:
     """
     Delete data files (not everything) from the given directory.
 
@@ -73,7 +74,7 @@ def delete_data_files(directory):
             os.remove(os.path.join(directory, file))
 
 
-def get_latest_file(filename):
+def get_latest_file(filename: str):
     """
     Get the file that matches the given name.
     Reverse sort by modification date in case there are multiple.
@@ -99,16 +100,11 @@ def get_latest_file(filename):
 
 
 @retry(wait=wait_fixed(30), stop=stop_after_attempt(60))
-def download_from_ftp(ftp):
+def download_from_ftp(ftp: FTP) -> list:
     """
     Download data files from FTP. It can take some time for SchoolMint
     to upload the reports after the API request, so we use Tenacity retry
     to wait up to 30 min.
-
-    :param ftp: FTP connection
-    :type ftp: Object
-    :return: Names of the files downloaded from the FTP
-    :rtype: List
     """
     logging.info("Attempting to download files")
     ftp.download_dir(SOURCEDIR, LOCALDIR)
@@ -119,14 +115,6 @@ def download_from_ftp(ftp):
 
 def prep_files_for_upload(files) -> pd. DataFrame:
     """
-    Take application data from csv and insert into table.
-
-    :param conn: Database connection
-    :type conn: Object
-    :param file: Name of the Application Data file
-    :type file: String
-    :param school_year: 4 digit school year
-    :type school_year: String
     """
     df_container = []
     for file in files:
@@ -152,15 +140,16 @@ def main():
     logging.info("Downloading Files")
     files = download_from_ftp(ftp)
     joined_files = prep_files_for_upload(files)
+    joined_files["school_year_4_digit"] = school_year
 
-    gbq_conn = GBQConnectionClient()
+    cloud_client = CloudStorageClient()
 
     blob_name = f"schoolmint/schoolmint_raw_data_{school_year}.csv"
     bucket = os.getenv("BUCKET")
-    gbq_conn.load_dataframe_to_cloud(bucket, blob_name, joined_files)
+    cloud_client.load_dataframe_to_cloud_as_csv(bucket, blob_name, joined_files)
 
     logging.info("Running dbt snapshot")
-    dbt_conn = DbtConnector()
+    dbt_conn = DbtClient()
     dbt_conn.run_job()
 
 

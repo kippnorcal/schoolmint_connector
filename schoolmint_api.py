@@ -36,15 +36,11 @@ class SchoolmintAPI:
         response = requests.post(url, headers=headers, data=body)
         if response.ok:
             j_data = json.loads(response.content.decode())
-            logging.info(
-                "API Token: " + api_token + " - Status: " + str(j_data["status"])
-            )
         else:
             j_data = json.loads(response.content.decode())
             logging.info(
-                "API Token: "
-                + api_token
-                + " - Error Code: "
+                "API Error - "
+                + "Error Code: "
                 + str(j_data["error_code"])
             )
             logging.info("Error Message: " + j_data["error_msg"])

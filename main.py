@@ -202,16 +202,27 @@ def sync_enrollment_targets(dw_conn, school_year):
     client = pygsheets.authorize(service_file="service.json")
     sheet = client.open_by_key(os.getenv("TARGETS_SHEET_ID"))
     worksheet = sheet.worksheet_by_title(os.getenv("TARGETS_SHEET_TITLE"))
-    df = worksheet.get_as_df()
-    pd.to_datetime(df["Goal_date"])
+    raw_targets = worksheet.get_as_df()
+    raw_targets_unpivoted = pd.melt(raw_targets, id_vars=['Schoolyear4digit','School','Grade_level','SystemSchoolID','LkSchoolID']
+                                ,value_vars=['app_1_budget','app_1_target','app_2_budget','app_2_target','app_total_budget','app_total_target'
+                                             ,'reg_1_budget','reg_1_target','reg_2_budget','reg_2_target','reg_total_budget','reg_total_target',
+                                            'new_student_budget','new_student_target','expected_number_of_returners','fdos_budget','fdos_target','matriculated_budget'])
+    raw_targets_unpivoted = raw_targets_unpivoted.rename(columns={'variable':'Goal_type','value':'Goal_num'})
+    target_dates = pd.read_csv('enrollment_model__school_year_2026_target_dates.csv')
+    print(raw_targets_unpivoted.head())
+    target_dates_and_values = pd.merge(raw_targets_unpivoted,target_dates,on='Goal_type',how='left')
+    print(target_dates_and_values.head())
+    target_dates_and_values = target_dates_and_values[['Schoolyear4digit','School','Grade_level','Goal_type','Goal_num','Goal_date','SystemSchoolID','LkSchoolID']]
+    target_dates_and_values = target_dates_and_values.astype({'Goal_date': 'datetime64[ns]','Grade_level':'object','Goal_num':'int'}) 
+    
     dw_conn.exec_cmd(  # drop into sqlalchemy because we are locked into an older version of sqlsorcery
         f"""
         DELETE FROM custom.SchoolMint_ProgressMonitoring
         WHERE Schoolyear4digit={school_year}
         """
     )
-    dw_conn.insert_into("SchoolMint_ProgressMonitoring", df)
-    logging.info(f"Loaded {len(df)} rows into Progress Monitoring table.")
+    dw_conn.insert_into("SchoolMint_ProgressMonitoring", target_dates_and_values)
+    logging.info(f"Loaded {len(target_dates_and_values)} rows into Progress Monitoring table.")
 
 
 def main():

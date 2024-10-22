@@ -152,11 +152,7 @@ def process_application_data(dw_conn, files, school_year):
     count = 0
     table = os.getenv("DB_RAW_TABLE")
     if count == 0:
-        # for 2021 enrollment period, exclude duplicate Bridge records coming from the KBA SM instance
-        # all of these records (and more) are already found in the Oakland Enrolls instance
         # TODO review for future years to see if this needs to stay
-        bridge_id = "164"
-        df = df.loc[df["School_Applying_to"] != bridge_id]
         dw_conn.insert_into(table, df)
         result = dw_conn.exec_sproc(f"{os.getenv('SPROC_RAW_POST')}")
         # result_set = result.fetchone()

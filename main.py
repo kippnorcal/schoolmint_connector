@@ -209,9 +209,7 @@ def sync_enrollment_targets(dw_conn, school_year):
                                             'new_student_budget','new_student_target','expected_number_of_returners','fdos_budget','fdos_target','matriculated_budget'])
     raw_targets_unpivoted = raw_targets_unpivoted.rename(columns={'variable':'Goal_type','value':'Goal_num'})
     target_dates = pd.read_csv('enrollment_model__school_year_2026_target_dates.csv')
-    print(raw_targets_unpivoted.head())
     target_dates_and_values = pd.merge(raw_targets_unpivoted,target_dates,on='Goal_type',how='left')
-    print(target_dates_and_values.head())
     target_dates_and_values = target_dates_and_values[['Schoolyear4digit','School','Grade_level','Goal_type','Goal_num','Goal_date','SystemSchoolID','LkSchoolID']]
     target_dates_and_values = target_dates_and_values.astype({'Goal_date': 'datetime64[ns]','Grade_level':'object','Goal_num':'int'}) 
     

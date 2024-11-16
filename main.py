@@ -107,8 +107,7 @@ def download_from_ftp(ftp: FTP) -> list:
     logging.info("Attempting to download files")
     ftp.download_dir(SOURCEDIR, LOCALDIR)
     regional_file = get_latest_file("Regional Automated Application Data Raw")
-    bridge_file = get_latest_file("Bridge Automated Application Data Raw")
-    return [regional_file, bridge_file]
+    return [regional_file]
 
 
 def prep_files_for_upload(files) -> pd. DataFrame:

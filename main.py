@@ -1,15 +1,11 @@
 import argparse
-import datetime as dt
-import glob
 import logging
 import os
 import sys
-import time
 import traceback
 
 from job_notifications import create_notifications
 import pandas as pd
-import pygsheets
 from tenacity import *
 from gbq_connector import CloudStorageClient
 from gbq_connector import DbtClient

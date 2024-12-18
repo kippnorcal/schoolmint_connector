@@ -201,8 +201,9 @@ def sync_enrollment_targets(dw_conn, school_year):
     raw_targets = worksheet.get_as_df()
     raw_targets_unpivoted = pd.melt(raw_targets, id_vars=['Schoolyear4digit','School','Grade_level','SystemSchoolID','LkSchoolID']
                                 ,value_vars=['app_1_budget','app_1_target','app_2_budget','app_2_target','app_total_budget','app_total_target'
-                                             ,'reg_1_budget','reg_1_target','reg_2_budget','reg_2_target','reg_total_budget','reg_total_target',
-                                            'new_student_budget','new_student_target','expected_number_of_returners','fdos_budget','fdos_target','matriculated_budget','budget_target'])
+                                             ,'reg_1_budget','reg_1_target','reg_2_budget','reg_2_target','reg_total_budget','reg_total_target'
+                                             ,'new_student_budget','new_student_target','expected_number_of_returners','fdos_budget','fdos_target'
+                                             ,'matriculated_budget','budget_target','budget_target_max_enroll'])
     raw_targets_unpivoted = raw_targets_unpivoted.rename(columns={'variable':'Goal_type','value':'Goal_num'})
     target_dates = pd.read_csv('enrollment_model__school_year_2026_target_dates.csv')
     target_dates_and_values = pd.merge(raw_targets_unpivoted,target_dates,on='Goal_type',how='left')

@@ -34,29 +34,21 @@ args = parser.parse_args()
 notifications = create_notifications("BigQuery Dev: Schoomint Connector", "mailgun")
 
 
-def read_csv_to_df(csv):
-    """
-    Read the csv into a dataframe in preparation for database load.
-
-    :param csv: Name of the csv file to be read into a DataFrame
-    :type csv: String
-    :return: Contents of the csv file
-    :rtype: DataFrame
-    """
-    if not os.path.isfile(csv):
+def read_csv_to_df(file_name: str) -> pd.DataFrame:
+    if not os.path.isfile(file_name):
         raise Exception(
-            f"ERROR: '{csv}' file does not exist. Most likely problem downloading from sFTP."
+            f"ERROR: '{file_name}' file does not exist. Most likely problem downloading from sFTP."
         )
-    df = pd.read_csv(csv, sep=",", quotechar='"', doublequote=True, dtype=str, header=0)
+    df = pd.read_csv(file_name, sep=",", quotechar='"', doublequote=True, dtype=str, header=0)
     count = len(df.index)
-    logging.info(f"Read {count} rows from CSV file '{csv}'.")
+    logging.info(f"Read {count} rows from CSV file '{file_name}'.")
     if int(os.getenv("REJECT_EMPTY_FILES")):
         if count == 0:
-            raise Exception(f"ERROR: No data was loaded from CSV file '{csv}'.")
+            raise Exception(f"ERROR: No data was loaded from CSV file '{file_name}'.")
     return df
 
 
-def delete_data_files(directory) -> None:
+def delete_data_files(directory: str) -> None:
     """
     Delete data files (not everything) from the given directory.
 
@@ -106,9 +98,7 @@ def download_from_ftp(ftp: FTP) -> list:
     return [regional_file]
 
 
-def prep_files_for_upload(files) -> pd. DataFrame:
-    """
-    """
+def prep_files_for_upload(files: list) -> pd. DataFrame:
     df_container = []
     for file in files:
         df_file = read_csv_to_df(f"{LOCALDIR}/{file}")
@@ -154,11 +144,11 @@ if __name__ == "__main__":
         logging.exception(e)
         stack_trace = traceback.format_exc()
         failure_email_address = os.getenv("FAILURE_EMAIL")
-        # if failure_email_address is not None:
-        #     notifications.simple_email(
-        #         from_address=os.getenv("FROM_ADDRESS"),
-        #         to_address=failure_email_address,
-        #         subject="Schoolmint Connector - Failed",
-        #         body="See #data_notifications for details."
-        #     )
+        if failure_email_address is not None:
+            notifications.simple_email(
+                from_address=os.getenv("FROM_ADDRESS"),
+                to_address=failure_email_address,
+                subject="BigQuery Schoolmint Connector - Failed",
+                body="See #data_notifications for details."
+            )
         notifications.notify(error_message=stack_trace)

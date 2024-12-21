@@ -7,7 +7,7 @@ import requests
 class SchoolmintAPI:
     """Class for the SchoolMint API connection."""
 
-    def __init__(self, env_suffixes=[""]):
+    def __init__(self, env_suffixes: list):
         """Initialize environment variables used to connect to the API."""
         self.endpoints = []
         for suffix in env_suffixes:

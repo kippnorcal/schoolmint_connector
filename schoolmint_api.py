@@ -4,7 +4,7 @@ import os
 import requests
 
 
-class API:
+class SchoolmintAPI:
     """Class for the SchoolMint API connection."""
 
     def __init__(self, env_suffixes: list):
@@ -36,15 +36,11 @@ class API:
         response = requests.post(url, headers=headers, data=body)
         if response.ok:
             j_data = json.loads(response.content.decode())
-            logging.info(
-                "Success: " + domain + " - Status: " + str(j_data["status"])
-            )
         else:
             j_data = json.loads(response.content.decode())
             logging.info(
-                "Failed: "
-                + domain
-                + " - Error Code: "
+                "API Error - "
+                + "Error Code: "
                 + str(j_data["error_code"])
             )
             logging.info("Error Message: " + j_data["error_msg"])

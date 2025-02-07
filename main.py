@@ -127,7 +127,7 @@ def main():
 
     cloud_client = CloudStorageClient()
 
-    blob_name = f"schoolmint/schoolmint_raw_data_{school_year}.csv"
+    blob_name = f"schoolmint/schoolmint_raw_application_data/schoolmint_raw_data_{school_year}.csv"
     bucket = os.getenv("BUCKET")
     cloud_client.load_dataframe_to_cloud_as_csv(bucket, blob_name, joined_files)
 

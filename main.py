@@ -27,8 +27,17 @@ logging.basicConfig(
 )
 logging.getLogger("paramiko").setLevel(logging.ERROR)
 
-parser = argparse.ArgumentParser(description="Additional migration options")
-parser.add_argument("--school-year", dest="school_year", help="School year in YYYY format; ex. '2025'")
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--school-year",
+    dest="school_year",
+    help="School year in YYYY format; ex. '2025'")
+parser.add_argument(
+    "--dbt-refresh",
+    help="Runs dbt refresh job",
+    dest="dbt_refresh",
+    action="store_true"
+)
 args = parser.parse_args()
 
 notifications = create_notifications("BigQuery Dev: Schoomint Connector", "mailgun")
@@ -131,9 +140,10 @@ def main():
     bucket = os.getenv("BUCKET")
     cloud_client.load_dataframe_to_cloud_as_csv(bucket, blob_name, joined_files)
 
-    logging.info("Running dbt snapshot")
-    dbt_conn = DbtClient()
-    dbt_conn.run_job()
+    if args.dbt_refresh:
+        logging.info("Running dbt snapshot")
+        dbt_conn = DbtClient()
+        dbt_conn.run_job()
 
 
 if __name__ == "__main__":

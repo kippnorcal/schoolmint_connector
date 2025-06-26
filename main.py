@@ -38,6 +38,12 @@ parser.add_argument(
     dest="dbt_refresh",
     action="store_true"
 )
+parser.add_argument(
+    "--semt-refresh",
+    help="Runs an adhoc dbt job to refresh the source of teh SEMT trackers",
+    dest="semt_refresh",
+    action="store_true"
+)
 args = parser.parse_args()
 
 notifications = create_notifications("BigQuery Dev: Schoomint Connector", "mailgun")

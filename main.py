@@ -31,11 +31,18 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--school-year",
     dest="school_year",
+    required=True,
     help="School year in YYYY format; ex. '2025'")
 parser.add_argument(
     "--dbt-refresh",
     help="Runs dbt refresh job",
     dest="dbt_refresh",
+    action="store_true"
+)
+parser.add_argument(
+    "--semt-refresh",
+    help="Runs an adhoc dbt job to refresh the source of the SEMT trackers",
+    dest="semt_refresh",
     action="store_true"
 )
 args = parser.parse_args()
@@ -144,6 +151,13 @@ def main():
         logging.info("Running dbt snapshot")
         dbt_conn = DbtClient()
         dbt_conn.run_job()
+
+
+    if args.semt_refresh:
+        job_id = os.getenv("SEMT_JOB_ID")
+        logging.info("Refreshing the SEMT datasource")
+        dbt_conn = DbtClient()
+        dbt_conn.run_job(job_id=job_id)
 
 
 if __name__ == "__main__":

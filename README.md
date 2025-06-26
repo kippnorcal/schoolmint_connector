@@ -89,10 +89,12 @@ $ docker build -t schoolmint .
 
 Here are the runtime arguments for the job:
 
-| Arg             | Description                                                                                                                     |
-|-----------------|---------------------------------------------------------------------------------------------------------------------------------|
-| `--school-year` | Required; Determines which school year the job is processing; The value of this arg gets added to a `school_year_4_digit` field |
-| `--dbt-refresh` | Optional; Can run a job in dbt to refresh schoolmint data                                                                       |
+| Arg              | Description                                                                                                                     |
+|------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `--school-year`  | Required; Determines which school year the job is processing; The value of this arg gets added to a `school_year_4_digit` field |
+| `--dbt-refresh`  | Optional; Can run a job in dbt to refresh Schoolmint data                                                                       |
+| `--semt-refresh` | Optional; Runs an adhoc dbt job to refresh the source of the SEMT trackers                                                      |
+
 
 #### Examples
 

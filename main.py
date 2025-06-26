@@ -40,7 +40,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--semt-refresh",
-    help="Runs an adhoc dbt job to refresh the source of teh SEMT trackers",
+    help="Runs an adhoc dbt job to refresh the source of the SEMT trackers",
     dest="semt_refresh",
     action="store_true"
 )

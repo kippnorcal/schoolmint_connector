@@ -31,6 +31,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--school-year",
     dest="school_year",
+    required=True,
     help="School year in YYYY format; ex. '2025'")
 parser.add_argument(
     "--dbt-refresh",

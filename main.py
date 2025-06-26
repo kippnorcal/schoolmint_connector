@@ -152,6 +152,13 @@ def main():
         dbt_conn.run_job()
 
 
+    if args.semt_refresh:
+        job_id = os.getenv("SEMT_JOB_ID")
+        logging.info("Refreshing the SEMT datasource")
+        dbt_conn = DbtClient()
+        dbt_conn.run_job(job_id=job_id)
+
+
 if __name__ == "__main__":
     try:
         main()

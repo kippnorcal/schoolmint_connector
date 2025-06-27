@@ -47,7 +47,8 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-notifications = create_notifications("BigQuery Dev: Schoomint Connector", "mailgun")
+notifications = create_notifications("Schoomint Connector", "mailgun")
+notifications.extend_job_name(f" - {args.school_year}")
 
 
 def read_csv_to_df(file_name: str) -> pd.DataFrame:

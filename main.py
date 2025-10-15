@@ -111,7 +111,7 @@ def download_from_ftp(ftp: FTP) -> list:
     """
     logging.info("Attempting to download files")
     ftp.download_dir(SOURCEDIR, LOCALDIR)
-    regional_file = get_latest_file("Regional Automated Application Data Raw")
+    regional_file = get_latest_file("Regional Automated Application Data Raw SFTP")
     return [regional_file]
 
 

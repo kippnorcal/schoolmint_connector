@@ -100,7 +100,7 @@ Here are the runtime arguments for the job:
 
 Run the job:
 ```
-docker run --rm -t --scool-year 2025
+docker run --rm -t --scool-year 2027
 ```
 
 #### Maintenance

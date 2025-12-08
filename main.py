@@ -51,6 +51,41 @@ notifications = create_notifications("Schoomint Connector", "mailgun")
 notifications.extend_job_name(f" - {args.school_year}")
 
 
+# Some of the colum names of the schoolmint report are incredibly long, so this map renames these columns
+COLUMN_RENAME_MAP = {
+    'In which country was the student born?': 'country_of_birth',
+    'When did the student first attend school in the United S...': 'first_attend_school_us',
+    'What grade level did the student first attend school in ...': 'first_grade_level_attend_school_us',
+    'Has the student ever attended a California public (distr...': 'has_student_ever_attended_california_public_school',
+    'Has the student ever attended school outside of the Unit...': 'has_student_ever_attended_school_outside_united_states',
+    'Has the student ever experienced interruption in their s...': 'has_student_ever_experienced_interruption_in_schooling',
+    'Is the student in Special Education?': 'is_student_in_special_education',
+    'Does the student receive speech therapy?': 'is_student_receiving_speech_therapy',
+    'Does the student have an Individualized Education Progra...': 'does_student_have_iep',
+    'Does the student have a 504 plan?': 'does_student_have_504_plan',
+    'Where do you and the student currently live?': 'where_does_guardian_and_student_live',
+    'Is the student in Foster Care?': 'is_student_in_foster_care',
+    'If yes, please provide the 19 Digit Foster Case ID.': 'foster_care_case_id',
+    'Does the student have Medi-Cal Health Insurance?': 'does_student_have_medical_health_insurance',
+    'If the student is eligible for public benefits (Medi-Cal...': 'do_you_auth_kipp_to_release_student_info_for_billing',
+    'Select all food allergies that apply:': 'student_food_allergies',
+    'Select all medication allergies that apply:': 'student_medication_allergies',
+    'Select any other allergies that apply:': 'student_other_allergies',
+    'If needed, you can provide more details about the studen...': 'student_allergy_details',
+    'If needed, you can provide more details about the studen....1': 'student_medical_condition_details',
+    'If needed, you can provide more details about the studen....2': 'student_mental_health_history',
+    'Does the student have any medical conditions or concerns...': 'does_student_have_medical_conditions_concerns',
+    'Does the student have any mental health or behavioral ne...': 'does_student_have_mental_health_behavioral_needs',
+    'Does the student require any daily medication?': 'does_student_require_daily_medication',
+    'Does the student require any emergency medications?': 'does_student_require_emergency_medication',
+    'Select all medical conditions or concerns that apply:': 'medical_conditions_or_concerns',
+    'Select all mental health or behavioral needs that apply:': 'mental_health_or_behavioral_needs',
+    'Is there an order regarding educational custody or other...': 'is_there_an_order_regarding_custody_or_other_issues',
+    'If yes, please explain. You will be asked to submit  a c...': 'custody_order_or_other_issues_explanation',
+}
+
+
+
 def read_csv_to_df(file_name: str) -> pd.DataFrame:
     if not os.path.isfile(file_name):
         raise Exception(
@@ -111,7 +146,7 @@ def download_from_ftp(ftp: FTP) -> list:
     """
     logging.info("Attempting to download files")
     ftp.download_dir(SOURCEDIR, LOCALDIR)
-    regional_file = get_latest_file("Regional Automated Application Data Raw SFTP")
+    regional_file = get_latest_file("Regional Automated Application Data SFTP")
     return [regional_file]
 
 
@@ -141,6 +176,7 @@ def main():
     files = download_from_ftp(ftp)
     joined_files = prep_files_for_upload(files)
     joined_files["school_year_4_digit"] = school_year
+    joined_files = joined_files.rename(columns=COLUMN_RENAME_MAP)
 
     cloud_client = CloudStorageClient()
 

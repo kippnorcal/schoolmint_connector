@@ -51,6 +51,7 @@ notifications = create_notifications("Schoomint Connector", "mailgun")
 notifications.extend_job_name(f" - {args.school_year}")
 
 
+# Some of the colum names of the schoolmint report are incredibly long, so this map renames these columns
 COLUMN_RENAME_MAP = {
     'In which country was the student born?': 'country_of_birth',
     'When did the student first attend school in the United S...': 'first_attend_school_us',

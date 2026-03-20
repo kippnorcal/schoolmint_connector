@@ -86,6 +86,24 @@ def prep_files_for_upload(files: list) -> pd. DataFrame:
     return df
 
 
+def check_for_new_columns(df: pd.DataFrame) -> bool:
+    expected_columns = list(COLUMN_RENAME_MAP.values())
+
+    new_columns = []
+    for column in df.columns:
+        if column not in expected_columns:
+            new_columns.append(column)
+
+    if new_columns:
+        logging.info(f"Found the following new columns:")
+        for column in new_columns:
+            logging.info(column)
+        logging.info("Please add these new columns to the data config.")
+        return True
+    else:
+        return False
+
+
 def fetch_report(school_year: str, cloud_client: CloudStorageClient):
 
     ftp = FTP()
@@ -104,6 +122,9 @@ def fetch_report(school_year: str, cloud_client: CloudStorageClient):
     joined_files = prep_files_for_upload(files)
     joined_files["school_year_4_digit"] = school_year
     joined_files = joined_files.rename(columns=COLUMN_RENAME_MAP)
+    if check_for_new_columns(joined_files):
+        logging.info("Filtering out new columns that are not in the config.")
+        joined_files = joined_files[list(COLUMN_RENAME_MAP.values())]
 
     blob_name = f"schoolmint/schoolmint_raw_application_data/schoolmint_raw_data_{school_year}.csv"
     bucket = os.getenv("BUCKET")

@@ -42,8 +42,7 @@ def main():
         dbt_conn.run_job()
     elif args.add_historical_columns:
         logging.info("Adding new columns to historical SM files")
-        dbt_conn = DbtClient()
-        dbt_conn.run_job()
+        add_historical_columns_workflow.run_workflow(school_year, cloud_client)
     elif args.semt_refresh:
         fetch_report_data_workflow.fetch_report(school_year, cloud_client)
         job_id = os.getenv("SEMT_JOB_ID")

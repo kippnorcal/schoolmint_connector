@@ -11,45 +11,39 @@ from gbq_connector import CloudStorageClient
 HISTORICAL_FOLDER = "schoolmint/schoolmint_raw_application_data_historical"
 
 
-def add_new_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Modify this function to add your new columns.
+def add_new_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
 
-    Examples:
-      df["new_col"] = "some value"
-      df["full_name"] = df["first_name"] + " " + df["last_name"]
-      df["row_number"] = range(1, len(df) + 1)
-    """
-    # Example columns:
-    df["new_col_1"] = "default value"
-    df["new_col_2"] = len(df)
+    for column in columns:
+        if column not in df.columns:
+            df[column] = ""
+            logging.info(f"--Added new column '{column}' to the dataframe.")
     return df
 
 
-def process_blob(blob: Blob, input_prefix: str, output_prefix: str):
+def process_blob(blob: Blob, bucket: str, cloud_storage: CloudStorageClient, columns: list):
     print(f"Processing: gs://{blob.bucket.name}/{blob.name}")
 
     csv_bytes = blob.download_as_bytes()
     df = pd.read_csv(BytesIO(csv_bytes))
+    df = df.astype(str)
 
-    df = add_new_columns(df)
+    df = add_new_columns(df, columns)
 
-    # Preserve the filename/path after the input prefix
-    relative_path = blob.name[len(input_prefix):].lstrip("/")
-    output_name = f"{output_prefix.rstrip('/')}/{relative_path}"
-
-    out_blob = output_bucket.blob(output_name)
-    out_blob.upload_from_file(out_buffer, content_type="text/csv")
-
-    print(f"Written to: gs://{output_bucket.name}/{output_name}")
+    cloud_storage.load_dataframe_to_cloud_as_csv(bucket, blob.name, df)
+    logging.info(f"Added new columns to '{blob.name}'.")
 
 
-def run_workflow(gcs_client: CloudStorageClient):
-
-
+def run_workflow(school_year: str, cloud_storage: CloudStorageClient):
     bucket = os.getenv("BUCKET")
+    current_report_blob_name = f"schoolmint/schoolmint_raw_application_data/schoolmint_raw_data_{school_year}.csv"
+    current_report_df = cloud_storage.get_csv_blob_as_dataframe(bucket, current_report_blob_name)
+    # get columns from df
+    columns = current_report_df.columns.tolist()
+
+
+
     count = 0
-    for blob in gcs_client.list_blobs(bucket, HISTORICAL_FOLDER, file_extension = ".csv"):
-        process_blob(bucket)
+    for blob in cloud_storage.list_blobs(bucket, HISTORICAL_FOLDER, file_extension = ".csv"):
+        process_blob(blob, bucket, cloud_storage, columns)
         count += 1
     logging.info(f"Added new columns to {count} historical CSV file(s)")

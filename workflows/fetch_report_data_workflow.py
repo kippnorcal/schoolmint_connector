@@ -7,11 +7,8 @@ from gbq_connector import CloudStorageClient
 
 from schoolmint_api import SchoolmintAPI
 from ftp import FTP
-from utils.data_config import COLUMN_RENAME_MAP
+from utils.data_config import COLUMN_RENAME_MAP, LOCALDIR, SFTP_SOURCEDIR, CURRENT_YEAR_FOLDER
 from utils import helpers
-
-LOCALDIR = "files"
-SOURCEDIR = "schoolmint"
 
 
 def read_csv_to_df(file_name: str) -> pd.DataFrame:
@@ -73,7 +70,7 @@ def download_from_ftp(ftp: FTP) -> list:
     to wait up to 30 min.
     """
     logging.info("Attempting to download files")
-    ftp.download_dir(SOURCEDIR, LOCALDIR)
+    ftp.download_dir(SFTP_SOURCEDIR, LOCALDIR)
     regional_file = get_latest_file("Regional Automated Application Data SFTP")
     return [regional_file]
 
@@ -122,8 +119,8 @@ def fetch_report(school_year: str, cloud_client: CloudStorageClient):
 
     ftp = FTP()
 
-    ftp.archive_remote_files(SOURCEDIR)
-    ftp.delete_old_archive_files(SOURCEDIR)
+    ftp.archive_remote_files(SFTP_SOURCEDIR)
+    ftp.delete_old_archive_files(SFTP_SOURCEDIR)
 
     api_suffixes = os.getenv("API_SUFFIXES").split(",")
     logging.info("Getting API data")
@@ -141,6 +138,6 @@ def fetch_report(school_year: str, cloud_client: CloudStorageClient):
         logging.info("Filtering out new columns that are not in the config.")
         joined_files = joined_files[list(COLUMN_RENAME_MAP.values())]
 
-    blob_name = f"schoolmint/schoolmint_raw_application_data/schoolmint_raw_data_{school_year}.csv"
+    blob_name = f"{CURRENT_YEAR_FOLDER}/schoolmint_raw_data_{school_year}.csv"
     bucket = os.getenv("BUCKET")
     cloud_client.load_dataframe_to_cloud_as_csv(bucket, blob_name, joined_files)

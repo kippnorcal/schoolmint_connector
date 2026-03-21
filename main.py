@@ -11,8 +11,6 @@ from utils import runtime_args
 from workflows import add_historical_columns_workflow
 from workflows import fetch_report_data_workflow
 
-LOCALDIR = "files"
-SOURCEDIR = "schoolmint"
 
 logging.basicConfig(
     handlers=[

@@ -1,4 +1,11 @@
 
+# Folders for SFTP Transfer
+LOCALDIR = "files"
+SFTP_SOURCEDIR = "schoolmint"
+
+# Paths in Google Cloud Storage
+CURRENT_YEAR_FOLDER = "schoolmint/schoolmint_raw_application_data"
+HISTORICAL_FOLDER = "schoolmint/schoolmint_raw_application_data_historical"
 
 # Some of the colum names of the schoolmint report are incredibly long, so this map renames these columns
 COLUMN_RENAME_MAP = {

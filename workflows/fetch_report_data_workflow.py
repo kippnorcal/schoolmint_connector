@@ -7,7 +7,12 @@ from gbq_connector import CloudStorageClient
 
 from schoolmint_api import SchoolmintAPI
 from ftp import FTP
-from utils.data_config import COLUMN_RENAME_MAP, LOCALDIR, SFTP_SOURCEDIR, CURRENT_YEAR_FOLDER
+from utils.data_config import BASE_FILE_NAME
+from utils.data_config import COLUMN_RENAME_MAP
+from utils.data_config import CURRENT_YEAR_FOLDER
+from utils.data_config import LOCALDIR
+from utils.data_config import SFTP_SOURCEDIR
+from utils.data_config import SM_REPORT_NAME
 from utils import helpers
 
 
@@ -71,7 +76,7 @@ def download_from_ftp(ftp: FTP) -> list:
     """
     logging.info("Attempting to download files")
     ftp.download_dir(SFTP_SOURCEDIR, LOCALDIR)
-    regional_file = get_latest_file("Regional Automated Application Data SFTP")
+    regional_file = get_latest_file(SM_REPORT_NAME)
     return [regional_file]
 
 
@@ -138,6 +143,6 @@ def fetch_report(school_year: str, cloud_client: CloudStorageClient):
         logging.info("Filtering out new columns that are not in the config.")
         joined_files = joined_files[list(COLUMN_RENAME_MAP.values())]
 
-    blob_name = f"{CURRENT_YEAR_FOLDER}/schoolmint_raw_data_{school_year}.csv"
+    blob_name = f"{CURRENT_YEAR_FOLDER}/{BASE_FILE_NAME}_{school_year}.csv"
     bucket = os.getenv("BUCKET")
     cloud_client.load_dataframe_to_cloud_as_csv(bucket, blob_name, joined_files)

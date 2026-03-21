@@ -2,8 +2,10 @@
 # Folders for SFTP Transfer
 LOCALDIR = "files"
 SFTP_SOURCEDIR = "schoolmint"
+SM_REPORT_NAME = "Regional Automated Application Data SFTP"
 
 # Paths in Google Cloud Storage
+BASE_FILE_NAME = "schoolmint_raw_data"
 CURRENT_YEAR_FOLDER = "schoolmint/schoolmint_raw_application_data"
 HISTORICAL_FOLDER = "schoolmint/schoolmint_raw_application_data_historical"
 

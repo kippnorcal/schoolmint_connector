@@ -6,7 +6,7 @@ import pandas as pd
 from google.cloud.storage import Blob
 from gbq_connector import CloudStorageClient
 
-from utils.data_config import CURRENT_YEAR_FOLDER, HISTORICAL_FOLDER
+from utils.data_config import CURRENT_YEAR_FOLDER, HISTORICAL_FOLDER, BASE_FILE_NAME
 from utils import helpers
 
 
@@ -53,7 +53,7 @@ def process_blob(blob: Blob, bucket: str, cloud_storage: CloudStorageClient, col
 
 def run_workflow(school_year: str, cloud_storage: CloudStorageClient):
     bucket = os.getenv("BUCKET")
-    current_report_blob_name = f"{CURRENT_YEAR_FOLDER}/schoolmint_raw_data_{school_year}.csv"
+    current_report_blob_name = f"{CURRENT_YEAR_FOLDER}/{BASE_FILE_NAME}_{school_year}.csv"
     current_report_df = cloud_storage.get_csv_blob_as_dataframe(bucket, current_report_blob_name)
     # get columns from df
     columns = current_report_df.columns.tolist()

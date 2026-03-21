@@ -25,5 +25,11 @@ def get_runtime_args():
         dest="add_historical_columns",
         action="store_true"
     )
+    parser.add_argument(
+        "-g, --generate-schema-json",
+        help="Generates a JSON schema for a BigQuery external table; must mount a volume to 'file' directory using -v flag",
+        dest="generate_schema",
+        action="store_true"
+    )
 
     return parser.parse_args()

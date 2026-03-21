@@ -89,20 +89,30 @@ $ docker build -t schoolmint .
 
 Here are the runtime arguments for the job:
 
-| Arg              | Description                                                                                                                     |
-|------------------|---------------------------------------------------------------------------------------------------------------------------------|
-| `--school-year`  | Required; Determines which school year the job is processing; The value of this arg gets added to a `school_year_4_digit` field |
-| `--dbt-refresh`  | Optional; Can run a job in dbt to refresh Schoolmint data                                                                       |
-| `--semt-refresh` | Optional; Runs an adhoc dbt job to refresh the source of the SEMT trackers                                                      |
-
-
+| Arg                          | Description                                                                                                                                                                                                                                                                                           |
+|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--school-year`              | Required; Determines which school year the job is processing; The value of this arg gets added to a `school_year_4_digit` field                                                                                                                                                                       |
+| `--dbt-refresh`              | Optional; Can run a job in dbt to refresh Schoolmint data                                                                                                                                                                                                                                             |
+| `--semt-refresh`             | Optional; Runs an adhoc dbt job to refresh the source of the SEMT trackers                                                                                                                                                                                                                            |
+| `-a, --add-cols-hist`        | Optional; When columns are added or removed to the current year's report, the historical reports need to be updated as well. This command will add or remove columns based on the current year's fields.                                                                                              |
+| `-g, --generate-schema-json` | Optional; When columns are added or removed from the report, the external table in BigQuery needs to be recreated with a new schema. This command creates a json version of the schema that can be copied and pasted in. This command requires a volumne to be mount to the docker container using -v |
 #### Examples
 
 Run the job:
 ```
-docker run --rm -t --scool-year 2027
+docker run --rm -t schoolmint --scool-year 2027
+```
+
+Update the columns of historical files:
+```
+docker run --rm -t schoolmint -a --scool-year 2027
+```
+
+Generate a JSON file for a new schema:
+```
+docker run --rm -t -v ~/Desktop:/code/files schoolmint-test -g --school-year 2027
 ```
 
 #### Maintenance
 
-The token for Schoolmint's API needs to be updated annually. This can be updated in the .env file
+The token for Schoolmint's API needs to be updated annually. This can be updated in the .env file. Making changes to the report through Schoolmint's UI will break the automation. Changes require a new API token.

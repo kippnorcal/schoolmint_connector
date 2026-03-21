@@ -1,4 +1,13 @@
 
+# Folders for SFTP Transfer
+LOCALDIR = "files"
+SFTP_SOURCEDIR = "schoolmint"
+SM_REPORT_NAME = "Regional Automated Application Data SFTP"
+
+# Paths in Google Cloud Storage
+BASE_FILE_NAME = "schoolmint_raw_data"
+CURRENT_YEAR_FOLDER = "schoolmint/schoolmint_raw_application_data"
+HISTORICAL_FOLDER = "schoolmint/schoolmint_raw_application_data_historical"
 
 # Some of the colum names of the schoolmint report are incredibly long, so this map renames these columns
 COLUMN_RENAME_MAP = {
@@ -92,7 +101,7 @@ COLUMN_RENAME_MAP = {
     'Where do you and the student currently live?': 'where_does_guardian_and_student_live',
     'Is the student in Foster Care?': 'is_student_in_foster_care',
     'If yes, please provide the 19 Digit Foster Case ID.': 'foster_care_case_id',
-    'Does the student have Medi-Cal Health Insurance?': 'does_student_have_medical_health_insurance',
+    'Does the student have Medi-Cal Health Insurance?': 'does_student_have_medi_cal_health_insurance',
     'If the student is eligible for public benefits (Medi-Cal...': 'do_you_auth_kipp_to_release_student_info_for_billing',
     'Select all food allergies that apply:': 'student_food_allergies',
     'Select all medication allergies that apply:': 'student_medication_allergies',
@@ -120,7 +129,7 @@ COLUMN_RENAME_MAP = {
     'Does the student require any medication, including inhal...': 'does_student_require_any_medication_including_inhaler',
     'Does the student have any allergies? This includes food ...': 'does_student_have_any_allergies',
     'Can you select your specific plan from the options below...': 'select_specific_plan_from_options_below',
-    'Can you select your specific Medi-Cal or other Public Pl...': 'select_specific_medi-cal_or_public_plan_from_options_below',
+    'Can you select your specific Medi-Cal or other Public Pl...': 'select_specific_medi_cal_or_public_plan_from_options_below',
     'If you selected "Other" for Health Insurance, please typ...': 'if_other_selected_type_health_insurance_below',
     'Do you give permission for KIPP to work with your child’...': 'permission_for_kipp_to_work_with_student_health_insurance',
     'Does the student have Medi-Cal or Other Public Plan Heal...': 'does_student_have_medicare_or_other_public_plan_healthcare',

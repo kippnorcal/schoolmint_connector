@@ -7,10 +7,13 @@ from gbq_connector import CloudStorageClient
 
 from schoolmint_api import SchoolmintAPI
 from ftp import FTP
+from utils.data_config import BASE_FILE_NAME
 from utils.data_config import COLUMN_RENAME_MAP
-
-LOCALDIR = "files"
-SOURCEDIR = "schoolmint"
+from utils.data_config import CURRENT_YEAR_FOLDER
+from utils.data_config import LOCALDIR
+from utils.data_config import SFTP_SOURCEDIR
+from utils.data_config import SM_REPORT_NAME
+from utils import helpers
 
 
 def read_csv_to_df(file_name: str) -> pd.DataFrame:
@@ -72,8 +75,8 @@ def download_from_ftp(ftp: FTP) -> list:
     to wait up to 30 min.
     """
     logging.info("Attempting to download files")
-    ftp.download_dir(SOURCEDIR, LOCALDIR)
-    regional_file = get_latest_file("Regional Automated Application Data SFTP")
+    ftp.download_dir(SFTP_SOURCEDIR, LOCALDIR)
+    regional_file = get_latest_file(SM_REPORT_NAME)
     return [regional_file]
 
 
@@ -89,10 +92,7 @@ def prep_files_for_upload(files: list) -> pd. DataFrame:
 def check_for_new_columns(df: pd.DataFrame) -> bool:
     expected_columns = list(COLUMN_RENAME_MAP.values())
 
-    new_columns = []
-    for column in df.columns:
-        if column not in expected_columns:
-            new_columns.append(column)
+    new_columns = helpers.column_diff(df, expected_columns, add_cols=True)
 
     if new_columns:
         logging.info(f"Found the following new columns:")
@@ -104,12 +104,28 @@ def check_for_new_columns(df: pd.DataFrame) -> bool:
         return False
 
 
+def check_for_deleted_columns(df: pd.DataFrame) -> bool:
+    expected_columns = list(COLUMN_RENAME_MAP.keys())
+
+
+    removed_columns = helpers.column_diff(df, expected_columns, remove_cols=True)
+
+    if removed_columns:
+        logging.info(f"The following columns appear missing:")
+        for column in removed_columns:
+            logging.info(column)
+        logging.info("Please check the mapping in the data_config module to verify.")
+        return True
+    else:
+        return False
+
+
 def fetch_report(school_year: str, cloud_client: CloudStorageClient):
 
     ftp = FTP()
 
-    ftp.archive_remote_files(SOURCEDIR)
-    ftp.delete_old_archive_files(SOURCEDIR)
+    ftp.archive_remote_files(SFTP_SOURCEDIR)
+    ftp.delete_old_archive_files(SFTP_SOURCEDIR)
 
     api_suffixes = os.getenv("API_SUFFIXES").split(",")
     logging.info("Getting API data")
@@ -121,11 +137,12 @@ def fetch_report(school_year: str, cloud_client: CloudStorageClient):
     files = download_from_ftp(ftp)
     joined_files = prep_files_for_upload(files)
     joined_files["school_year_4_digit"] = school_year
+    check_for_deleted_columns(joined_files)
     joined_files = joined_files.rename(columns=COLUMN_RENAME_MAP)
     if check_for_new_columns(joined_files):
         logging.info("Filtering out new columns that are not in the config.")
         joined_files = joined_files[list(COLUMN_RENAME_MAP.values())]
 
-    blob_name = f"schoolmint/schoolmint_raw_application_data/schoolmint_raw_data_{school_year}.csv"
+    blob_name = f"{CURRENT_YEAR_FOLDER}/{BASE_FILE_NAME}_{school_year}.csv"
     bucket = os.getenv("BUCKET")
     cloud_client.load_dataframe_to_cloud_as_csv(bucket, blob_name, joined_files)

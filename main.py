@@ -10,9 +10,8 @@ from gbq_connector import DbtClient
 from utils import runtime_args
 from workflows import add_historical_columns_workflow
 from workflows import fetch_report_data_workflow
+from workflows import generate_schema_workflow
 
-LOCALDIR = "files"
-SOURCEDIR = "schoolmint"
 
 logging.basicConfig(
     handlers=[
@@ -49,6 +48,9 @@ def main():
         logging.info("Refreshing the SEMT datasource")
         dbt_conn = DbtClient()
         dbt_conn.run_job(job_id=job_id)
+    elif args.generate_schema:
+        logging.info("Generating JSON Schema")
+        generate_schema_workflow.generate_schema(school_year, cloud_client)
     else:
         fetch_report_data_workflow.fetch_report(school_year, cloud_client)
 

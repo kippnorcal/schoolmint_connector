@@ -8,6 +8,7 @@ from gbq_connector import CloudStorageClient
 from schoolmint_api import SchoolmintAPI
 from ftp import FTP
 from utils.data_config import COLUMN_RENAME_MAP
+from utils import helpers
 
 LOCALDIR = "files"
 SOURCEDIR = "schoolmint"
@@ -89,16 +90,29 @@ def prep_files_for_upload(files: list) -> pd. DataFrame:
 def check_for_new_columns(df: pd.DataFrame) -> bool:
     expected_columns = list(COLUMN_RENAME_MAP.values())
 
-    new_columns = []
-    for column in df.columns:
-        if column not in expected_columns:
-            new_columns.append(column)
+    new_columns = helpers.column_diff(df, expected_columns, add_cols=True)
 
     if new_columns:
         logging.info(f"Found the following new columns:")
         for column in new_columns:
             logging.info(column)
         logging.info("Please add these new columns to the data config.")
+        return True
+    else:
+        return False
+
+
+def check_for_deleted_columns(df: pd.DataFrame) -> bool:
+    expected_columns = list(COLUMN_RENAME_MAP.keys())
+
+
+    removed_columns = helpers.column_diff(df, expected_columns, remove_cols=True)
+
+    if removed_columns:
+        logging.info(f"The following columns appear missing:")
+        for column in removed_columns:
+            logging.info(column)
+        logging.info("Please check the mapping in the data_config module to verify.")
         return True
     else:
         return False
@@ -121,6 +135,7 @@ def fetch_report(school_year: str, cloud_client: CloudStorageClient):
     files = download_from_ftp(ftp)
     joined_files = prep_files_for_upload(files)
     joined_files["school_year_4_digit"] = school_year
+    check_for_deleted_columns(joined_files)
     joined_files = joined_files.rename(columns=COLUMN_RENAME_MAP)
     if check_for_new_columns(joined_files):
         logging.info("Filtering out new columns that are not in the config.")

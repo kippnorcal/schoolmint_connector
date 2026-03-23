@@ -47,6 +47,9 @@ def process_blob(blob: Blob, bucket: str, cloud_storage: CloudStorageClient, col
 
     df = add_new_columns(df, columns)
     df = columns_to_remove(df, columns)
+    # Ensuring that the 'school_year_4_digit' column is the last column
+    logging.info("Moving 'school_year_4_digit' to the end of the columns.")
+    df["school_year_4_digit"] = df.pop("school_year_4_digit")
 
     cloud_storage.load_dataframe_to_cloud_as_csv(bucket, blob.name, df)
 

@@ -43,7 +43,7 @@ def process_blob(blob: Blob, bucket: str, cloud_storage: CloudStorageClient, col
 
     csv_bytes = blob.download_as_bytes()
     df = pd.read_csv(BytesIO(csv_bytes))
-    df = df.astype(str)
+    df = df.fillna("").astype(str)
 
     df = add_new_columns(df, columns)
     df = columns_to_remove(df, columns)

@@ -27,7 +27,6 @@ logging.getLogger("paramiko").setLevel(logging.ERROR)
 args = runtime_args.get_runtime_args()
 
 notifications = create_notifications("Schoomint Connector", "mailgun")
-notifications.extend_job_name(f" - {args.school_year}")
 
 
 def main():
@@ -35,23 +34,28 @@ def main():
     cloud_client = CloudStorageClient()
 
     if args.dbt_refresh:
+        notifications.extend_job_name(f" - {args.school_year} w/dbt refresh")
         fetch_report_data_workflow.fetch_report(school_year, cloud_client)
         logging.info("Running dbt snapshot")
         dbt_conn = DbtClient()
         dbt_conn.run_job()
     elif args.add_historical_columns:
+        notifications.extend_job_name(f" - Add new cols to hist SM files")
         logging.info("Adding new columns to historical SM files")
         add_historical_columns_workflow.run_workflow(school_year, cloud_client)
     elif args.semt_refresh:
+        notifications.extend_job_name(f" - {args.school_year} w/SEMT refresh")
         fetch_report_data_workflow.fetch_report(school_year, cloud_client)
         job_id = os.getenv("SEMT_JOB_ID")
         logging.info("Refreshing the SEMT datasource")
         dbt_conn = DbtClient()
         dbt_conn.run_job(job_id=job_id)
     elif args.generate_schema:
+        notifications.extend_job_name(f" - Generate JSON Schema")
         logging.info("Generating JSON Schema")
         generate_schema_workflow.generate_schema(school_year, cloud_client)
     else:
+        notifications.extend_job_name(f" - {args.school_year}")
         fetch_report_data_workflow.fetch_report(school_year, cloud_client)
 
 

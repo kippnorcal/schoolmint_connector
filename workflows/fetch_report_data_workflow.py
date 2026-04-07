@@ -111,10 +111,10 @@ def check_for_deleted_columns(df: pd.DataFrame) -> bool:
     removed_columns = helpers.column_diff(df, expected_columns, remove_cols=True)
 
     if removed_columns:
-        logging.info(f"The following columns appear missing:")
+        logging.info(f"The following columns appear missing fom the report:")
         for column in removed_columns:
             logging.info(column)
-        logging.info("Please check the mapping in the data_config module to verify.")
+        logging.info("Please update the map in the data_config module to add or remove column.")
         return True
     else:
         return False

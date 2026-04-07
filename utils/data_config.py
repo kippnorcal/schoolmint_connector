@@ -133,4 +133,5 @@ COLUMN_RENAME_MAP = {
     'does_student_have_medi-cal_or_other_health_insurance': 'does_student_have_medi_cal_or_other_public_plan_healthcare',
     'is_there_an_order_regarding_educational_custody_or_other_court_order': 'is_there_an_order_regarding_custody_or_other_issues',
     'If_yes_explain_you_will_be_asked_to_submit_a_legal_docs': 'custody_order_or_other_issues_explanation',
+    'does_student_currently_have_medical_insurance': 'does_student_currently_have_medical_insurance'
 }

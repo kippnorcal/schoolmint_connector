@@ -39,7 +39,7 @@ def columns_to_remove(df: pd.DataFrame, columns: list) -> pd.DataFrame:
 
 
 def process_blob(blob: Blob, bucket: str, cloud_storage: CloudStorageClient, columns: list):
-    print(f"Processing: gs://{blob.bucket.name}/{blob.name}")
+    logging.info(f"Processing: gs://{blob.bucket.name}/{blob.name}")
 
     csv_bytes = blob.download_as_bytes()
     df = pd.read_csv(BytesIO(csv_bytes))

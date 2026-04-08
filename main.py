@@ -33,7 +33,7 @@ notifications = create_notifications("Schoomint Connector", "mailgun")
 def main():
     school_year = args.school_year
     cloud_client = CloudStorageClient()
-    rename_map = dict(args.rename_column or [])
+    rename_map = dict(args.rename_hist_column or [])
 
     if args.dbt_refresh:
         notifications.extend_job_name(f" - {args.school_year} w/dbt refresh")

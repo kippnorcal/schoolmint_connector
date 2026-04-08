@@ -24,8 +24,12 @@ def process_blob(blob: Blob, bucket: str, cloud_storage: CloudStorageClient, ren
 def run_workflow(cloud_storage: CloudStorageClient, rename_map: dict):
     bucket = os.getenv("BUCKET")
 
+    logging.info("Renaming the following columns:")
+    for old_col, new_col in rename_map.items():
+        logging.info(f"{old_col} to {new_col}")
+
     count = 0
     for blob in cloud_storage.list_blobs(bucket, HISTORICAL_FOLDER, file_extension = ".csv"):
         process_blob(blob, bucket, cloud_storage, rename_map)
         count += 1
-    logging.info(f"Added new columns to {count} historical CSV file(s)")
+    logging.info(f"Renamed columns in {count} historical CSV file(s)")

@@ -51,6 +51,9 @@ def process_blob(blob: Blob, bucket: str, cloud_storage: CloudStorageClient, col
     logging.info("Moving 'school_year_4_digit' to the end of the columns.")
     df["school_year_4_digit"] = df.pop("school_year_4_digit")
 
+    # Making sure column order matches
+    df = df[columns]
+
     cloud_storage.load_dataframe_to_cloud_as_csv(bucket, blob.name, df)
 
 

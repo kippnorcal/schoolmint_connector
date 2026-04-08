@@ -39,7 +39,7 @@ def columns_to_remove(df: pd.DataFrame, columns: list) -> pd.DataFrame:
 
 
 def process_blob(blob: Blob, bucket: str, cloud_storage: CloudStorageClient, columns: list):
-    print(f"Processing: gs://{blob.bucket.name}/{blob.name}")
+    logging.info(f"Processing: gs://{blob.bucket.name}/{blob.name}")
 
     csv_bytes = blob.download_as_bytes()
     df = pd.read_csv(BytesIO(csv_bytes))
@@ -50,6 +50,9 @@ def process_blob(blob: Blob, bucket: str, cloud_storage: CloudStorageClient, col
     # Ensuring that the 'school_year_4_digit' column is the last column
     logging.info("Moving 'school_year_4_digit' to the end of the columns.")
     df["school_year_4_digit"] = df.pop("school_year_4_digit")
+
+    # Making sure column order matches
+    df = df[columns]
 
     cloud_storage.load_dataframe_to_cloud_as_csv(bucket, blob.name, df)
 

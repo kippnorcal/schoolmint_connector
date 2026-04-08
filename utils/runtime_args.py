@@ -31,5 +31,13 @@ def get_runtime_args():
         dest="generate_schema",
         action="store_true"
     )
+    parser.add_argument(
+        "--rename-hist-column",
+        dest="rename_hist_column",
+        nargs=2,
+        action="append",
+        metavar=("OLD", "NEW"),
+        help="Rename a column in historical table: --rename-column old_name new_name",
+    )
 
     return parser.parse_args()

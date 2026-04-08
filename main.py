@@ -11,6 +11,7 @@ from utils import runtime_args
 from workflows import add_historical_columns_workflow
 from workflows import fetch_report_data_workflow
 from workflows import generate_schema_workflow
+from workflows import rename_historical_columns
 
 
 logging.basicConfig(
@@ -32,6 +33,7 @@ notifications = create_notifications("Schoomint Connector", "mailgun")
 def main():
     school_year = args.school_year
     cloud_client = CloudStorageClient()
+    rename_map = dict(args.rename_column or [])
 
     if args.dbt_refresh:
         notifications.extend_job_name(f" - {args.school_year} w/dbt refresh")
@@ -54,6 +56,9 @@ def main():
         notifications.extend_job_name(f" - Generate JSON Schema")
         logging.info("Generating JSON Schema")
         generate_schema_workflow.generate_schema(school_year, cloud_client)
+    elif rename_map:
+        notifications.extend_job_name(f" - Renaming Hist Columns")
+        rename_historical_columns.run_workflow(cloud_client, rename_map)
     else:
         notifications.extend_job_name(f" - {args.school_year}")
         fetch_report_data_workflow.fetch_report(school_year, cloud_client)

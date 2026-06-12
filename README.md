@@ -1,4 +1,4 @@
-# schoolmint_connector
+# schoolmint-connector
 Data pipeline for Schoolmint application data. This pipeline pings Schoolmint's API to generate a report that is sent to an SFTP server. The pipeline then loads that file from the SFTP server to Google Cloud Storage.
 
 ## Dependencies:
@@ -77,7 +77,7 @@ DBT_PERSONAL_ACCESS_TOKEN=
 
 Our org had a need to get Schoolmint data from multiple API's that had the same name except for the final word in the
 name. The automation will iterate over each suffix listed in `API_SUFFIXES` and join them with `API_DOMAIN_REGIONAL` to 
-get the full endpoint name. At some point, this will be removed since we are no long using multiple endpoints.
+get the full endpoint name. In the future, this will be removed since we are no long using multiple endpoints.
 
 5. Build Docker Image
 
@@ -108,9 +108,9 @@ Update the columns of historical files:
 docker run --rm -t schoolmint -a --scool-year 2027
 ```
 
-Generate a JSON file for a new schema:
+Generate a JSON file for a new schema (using the -v volume flag):
 ```
-docker run --rm -t -v ~/Desktop:/code/files schoolmint-test -g --school-year 2027
+docker run --rm -t -v ~/Desktop:/code/files schoolmint -g --school-year 2027
 ```
 
 #### Maintenance

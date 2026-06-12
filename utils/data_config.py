@@ -134,5 +134,8 @@ COLUMN_RENAME_MAP = {
     'is_there_an_order_regarding_educational_custody_or_other_court_order': 'is_there_an_order_regarding_custody_or_other_issues',
     'If_yes_explain_you_will_be_asked_to_submit_a_legal_docs': 'custody_order_or_other_issues_explanation',
     'does_student_currently_have_medical_insurance': 'does_student_currently_have_medical_insurance',
-    'What is the most recent date the student attended school...': 'most_recent_date_student_attended_school_outside_us'
+    'What is the most recent date the student attended school...': 'most_recent_date_student_attended_school_outside_us',
+    'is_student_hispanic_or_latinx': 'is_student_hispanic_or_latinx',
+    'does_the_student_identify_as_only_hispanic_latinx': 'does_the_student_identify_as_only_hispanic_latinx',
+    'what_is_student_race': 'what_is_student_race',
 }

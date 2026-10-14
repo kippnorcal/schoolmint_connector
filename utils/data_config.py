@@ -143,6 +143,5 @@ COLUMN_RENAME_MAP = {
     'interested_guardian_full_name': 'interested_guardian_full_name',
     'interested_student_name_and_grade': 'interested_student_name_and_grade',
     'do_you_know_anyone_interested_in_kipp': 'do_you_know_anyone_interested_in_kipp',
-    'how_did_you_hear_about_kipp': 'how_did_you_hear_about_kipp',
-    'most_recent_date_student_attended_school_in_us': 'most_recent_date_student_attended_school_in_us'
+    'how_did_you_hear_about_kipp': 'how_did_you_hear_about_kipp'
 }

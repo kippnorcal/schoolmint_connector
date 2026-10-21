@@ -123,18 +123,21 @@ def check_for_deleted_columns(df: pd.DataFrame) -> bool:
 def fetch_report(school_year: str, cloud_client: CloudStorageClient):
 
     ftp = FTP()
+    try:
+        ftp.archive_remote_files(SFTP_SOURCEDIR)
+        ftp.delete_old_archive_files(SFTP_SOURCEDIR)
 
-    ftp.archive_remote_files(SFTP_SOURCEDIR)
-    ftp.delete_old_archive_files(SFTP_SOURCEDIR)
+        api_suffixes = os.getenv("API_SUFFIXES").split(",")
+        logging.info("Getting API data")
+        SchoolmintAPI(api_suffixes).request_reports()
+        if int(os.getenv("DELETE_LOCAL_FILES")):
+            delete_data_files(LOCALDIR)
 
-    api_suffixes = os.getenv("API_SUFFIXES").split(",")
-    logging.info("Getting API data")
-    SchoolmintAPI(api_suffixes).request_reports()
-    if int(os.getenv("DELETE_LOCAL_FILES")):
-        delete_data_files(LOCALDIR)
+        logging.info("Downloading Files")
+        files = download_from_ftp(ftp)
+    finally:
+        ftp.close()
 
-    logging.info("Downloading Files")
-    files = download_from_ftp(ftp)
     joined_files = prep_files_for_upload(files)
     joined_files["school_year_4_digit"] = school_year
     check_for_deleted_columns(joined_files)

@@ -98,8 +98,7 @@ class FTP:
         :param remotedir: Path of the remote directory (ie. the FTP directory)
         :type remotedir: String
         """
-        archivedir = posixpath.join(remotedir, "archive")
         age_limit = dt.datetime.now() - dt.timedelta(days=self.ARCHIVE_MAX_DAYS)
-        for attr in self._list_files(archivedir):
+        for attr in self._list_files(remotedir):
             if attr.st_mtime < age_limit.timestamp():
-                self.ftpsrv.remove(posixpath.join(archivedir, attr.filename))
+                self.ftpsrv.remove(posixpath.join(remotedir, attr.filename))

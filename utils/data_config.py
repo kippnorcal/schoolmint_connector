@@ -1,7 +1,8 @@
 
 # Folders for SFTP Transfer
 LOCALDIR = "files"
-SFTP_SOURCEDIR = "/upload"
+SFTP_SOURCE_DIR = "/upload"
+SFTP_ARCHIVE_DIR = "/archive"
 SM_REPORT_NAME = "Regional Automated Application Data SFTP"
 
 # Paths in Google Cloud Storage

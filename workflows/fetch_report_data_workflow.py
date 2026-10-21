@@ -11,7 +11,8 @@ from utils.data_config import BASE_FILE_NAME
 from utils.data_config import COLUMN_RENAME_MAP
 from utils.data_config import CURRENT_YEAR_FOLDER
 from utils.data_config import LOCALDIR
-from utils.data_config import SFTP_SOURCEDIR
+from utils.data_config import SFTP_ARCHIVE_DIR
+from utils.data_config import SFTP_SOURCE_DIR
 from utils.data_config import SM_REPORT_NAME
 from utils import helpers
 
@@ -75,7 +76,7 @@ def download_from_ftp(ftp: FTP) -> list:
     to wait up to 30 min.
     """
     logging.info("Attempting to download files")
-    ftp.download_dir(SFTP_SOURCEDIR, LOCALDIR)
+    ftp.download_dir(SFTP_SOURCE_DIR, LOCALDIR)
     regional_file = get_latest_file(SM_REPORT_NAME)
     return [regional_file]
 
@@ -124,8 +125,8 @@ def fetch_report(school_year: str, cloud_client: CloudStorageClient):
 
     ftp = FTP()
     try:
-        ftp.archive_remote_files(SFTP_SOURCEDIR)
-        ftp.delete_old_archive_files(SFTP_SOURCEDIR)
+        ftp.archive_remote_files(SFTP_SOURCE_DIR)
+        ftp.delete_old_archive_files(SFTP_ARCHIVE_DIR)
 
         api_suffixes = os.getenv("API_SUFFIXES").split(",")
         logging.info("Getting API data")

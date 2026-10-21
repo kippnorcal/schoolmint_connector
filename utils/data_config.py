@@ -1,7 +1,7 @@
 
 # Folders for SFTP Transfer
 LOCALDIR = "files"
-SFTP_SOURCEDIR = "schoolmint"
+SFTP_SOURCEDIR = "/upload"
 SM_REPORT_NAME = "Regional Automated Application Data SFTP"
 
 # Paths in Google Cloud Storage

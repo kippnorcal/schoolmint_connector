@@ -1,9 +1,11 @@
-import os
+import base64
 import datetime as dt
-import sys
+import os
+import posixpath
+import stat
 import time
 
-import pysftp
+import paramiko
 
 
 class FTP:
@@ -14,106 +16,90 @@ class FTP:
         self.FTP_HOST = os.getenv("FTP_HOSTNAME")
         self.FTP_USER = os.getenv("FTP_USERNAME")
         self.FTP_PWD = os.getenv("FTP_PWD")
-        self.FTP_KEY = os.getenv("FTP_KEY")
         self.ARCHIVE_MAX_DAYS = int(os.getenv("ARCHIVE_MAX_DAYS"))
-        self._add_hostkeys()
-        self.ftpsrv = pysftp.Connection(
-            host=self.FTP_HOST,
+        self.client = paramiko.SSHClient()
+        self.key = self._add_hostkeys()
+        self.client.connect(
+            hostname=self.FTP_HOST,
             username=self.FTP_USER,
-            password=self.FTP_PWD,
-            cnopts=self.cnopts,
+            pkey=self.key,
+            allow_agent=False,
+            look_for_keys=False,
         )
+        self.ftpsrv = self.client.open_sftp()
 
     def _add_hostkeys(self):
         """
-        Adds sftp host key to known_hosts to prevent man in the middle attacks.
-        Requires FTP_KEY be included in .env. Key can be acquired using
-        OpenSSH: ssh-keyscan {sftp_url}
+        Trusts only the sftp host key to prevent man in the middle attacks.
+        Key can be acquired using OpenSSH: ssh-keyscan {sftp_url}
         """
-        hostkey = f"{self.FTP_HOST} ssh-rsa {self.FTP_KEY}"
-        ssh_dir = "/root/.ssh/"
-        host_file = f"{ssh_dir}known_hosts"
-        os.makedirs(os.path.dirname(ssh_dir), exist_ok=True)
-        with open(host_file, "w") as f:
-            f.write(hostkey)
+        hostkey = paramiko.Ed25519Key.from_private_key_file("/root/.ssh/schoolmint_pipeline")
+        self.client.load_host_keys("/root/.ssh/known_hosts")
+        self.client.set_missing_host_key_policy(paramiko.RejectPolicy())
+        return hostkey
 
-        self.cnopts = pysftp.CnOpts()
-        self.cnopts.hostkeys.load(host_file)
+    def close(self):
+        """Close the SFTP session and the underlying SSH connection."""
+        self.ftpsrv.close()
+        self.client.close()
+
+    def _list_files(self, remotedir):
+        """
+        List the regular files (not directories) in the remote directory.
+
+        :param remotedir: Path of the remote directory
+        :type remotedir: String
+        :return: Attributes of each file, with the file name in 'filename'
+        :rtype: List of paramiko.SFTPAttributes
+        """
+        return [
+            attr
+            for attr in self.ftpsrv.listdir_attr(remotedir)
+            if stat.S_ISREG(attr.st_mode)
+        ]
 
     def download_dir(self, remotedir, localdir):
         """
         Download all files from the remote directory to the local directory.
-        
+
         :param remotedir: Path of the remote directory that we are getting files from (ie. the FTP directory)
         :type remotedir: String
         :param localdir: Path of the local directory that we are saving files to
         :type localdir: String
         """
         # 2 is the number of files plus the archive directory
-        if len(self.ftpsrv.listdir(remotepath=remotedir)) >= 2:
+        if len(self.ftpsrv.listdir(remotedir)) >= 2:
             time.sleep(30)  # wait to allow the files to finish uploading
-            self.ftpsrv.get_d(remotedir, localdir, preserve_mtime=True)
-
-    def _archive_file(self, file):
-        """
-        Place the file in an 'archive' folder within its directory.
-
-        :param file: Path and name of the file that will be archived. 
-        :type file: String
-        """
-        self.ftpsrv.rename(
-            file, file.replace(self.remotedir, f"{self.remotedir}/archive")
-        )
-
-    def _do_nothing(self, file):
-        """
-        Used for files and unknown file types.
-
-        :param file: Path and name of the file that will be ignored. 
-        :type file: String
-        """
-        pass
+            for attr in self._list_files(remotedir):
+                local_file = os.path.join(localdir, attr.filename)
+                self.ftpsrv.get(posixpath.join(remotedir, attr.filename), local_file)
+                # preserve mtime so the latest file can be found by modification date
+                os.utime(local_file, (attr.st_atime, attr.st_mtime))
 
     def archive_remote_files(self, remotedir):
         """
-        Archive all of the files in the specified remote directory. 
-        
+        Archive all of the files in the specified remote directory by placing
+        them in an 'archive' folder within that directory.
+
         :param remotedir: Path of the remote directory (ie. the FTP directory)
         :type remotedir: String
         """
-        self.remotedir = remotedir
-        self.ftpsrv.walktree(
-            self.remotedir,
-            fcallback=self._archive_file,
-            dcallback=self._do_nothing,
-            ucallback=self._do_nothing,
-            recurse=False,
-        )
-
-    def _delete_old_file(self, file):
-        """
-        Find the age limit based on the env variable and delete files older than this limit.
-
-        :param file: Path and name of the file
-        :type file: String
-        """
-        stat = self.ftpsrv.stat(file)
-        age_limit = dt.datetime.now() - dt.timedelta(self.ARCHIVE_MAX_DAYS)
-        if stat.st_mtime < age_limit.timestamp():
-            self.ftpsrv.remove(file)
+        for attr in self._list_files(remotedir):
+            self.ftpsrv.rename(
+                posixpath.join(remotedir, attr.filename),
+                posixpath.join(remotedir, "archive", attr.filename),
+            )
 
     def delete_old_archive_files(self, remotedir):
         """
-        Delete old files from the archive folder.
+        Delete files from the archive folder that are older than the
+        ARCHIVE_MAX_DAYS limit.
 
         :param remotedir: Path of the remote directory (ie. the FTP directory)
         :type remotedir: String
         """
-        archivedir = f"{remotedir}/archive"
-        self.ftpsrv.walktree(
-            archivedir,
-            fcallback=self._delete_old_file,
-            dcallback=self._do_nothing,
-            ucallback=self._do_nothing,
-            recurse=False,
-        )
+        archivedir = posixpath.join(remotedir, "archive")
+        age_limit = dt.datetime.now() - dt.timedelta(days=self.ARCHIVE_MAX_DAYS)
+        for attr in self._list_files(archivedir):
+            if attr.st_mtime < age_limit.timestamp():
+                self.ftpsrv.remove(posixpath.join(archivedir, attr.filename))

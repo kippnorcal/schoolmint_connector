@@ -4,14 +4,13 @@ Data pipeline for Schoolmint application data. This pipeline pings Schoolmint's 
 ## Dependencies:
 
 * Python3
-* [Pipenv](https://pipenv.readthedocs.io/en/latest/)
 * [Docker](https://www.docker.com/)
 * Google Cloud Storage
 
 ### Additional Dependencies
 
 This job requires an FTP server for Schoolmint to drop the files on. Our org uses a Digital Ocean droplet, but a SFTP server through any service should work. 
-You will need to provide some info about the server to Schoolmint so they can create your API token.
+You will need to provide some info about the server to Schoolmint so they can create your API token. The below instructions assume that an SFTP server has been set up with a user for the pipeline to log in with. We recommend creating a user for the pipeline named `schoolmint_pipeline`.
 
 ## Getting Started
 
@@ -23,20 +22,13 @@ You will need to provide some info about the server to Schoolmint so they can cr
 $ git clone https://github.com/kippnorcal/ukg-connector.git 
 ```
 
-2. Install Pipenv
-
-```
-$ pip install pipenv
-$ pipenv install
-```
-
-3. Install Docker
+2. Install Docker
 
 * **Mac**: [https://docs.docker.com/docker-for-mac/install/](https://docs.docker.com/docker-for-mac/install/)
 * **Linux**: [https://docs.docker.com/install/linux/docker-ce/debian/](https://docs.docker.com/install/linux/docker-ce/debian/)
 * **Windows**: [https://docs.docker.com/docker-for-windows/install/](https://docs.docker.com/docker-for-windows/install/)
 
-4. Create .env file with project secrets
+3. Create .env file with project secrets
 
 ```
 DELETE_LOCAL_FILES=1
@@ -50,8 +42,7 @@ BUCKET= # Name of your Cloud Storage Bucket
 FTP_HOSTNAME=
 FTP_USERNAME=
 FTP_PWD=
-FTP_KEY=
-ARCHIVE_MAX_DAYS=60
+ARCHIVE_MAX_DAYS=
 
 # API Variables
 API_SUFFIXES=
@@ -79,11 +70,54 @@ Our org had a need to get Schoolmint data from multiple API's that had the same 
 name. The automation will iterate over each suffix listed in `API_SUFFIXES` and join them with `API_DOMAIN_REGIONAL` to 
 get the full endpoint name. In the future, this will be removed since we are no long using multiple endpoints.
 
-5. Build Docker Image
+4. Build Docker Image
 
 ```
 $ docker build -t schoolmint .
 ```
+
+5. Optional - Update the `run_schoolmint.sh` File
+
+To run the main job, the Docker container needs to have an ssh key and known_hosts file mounted to it in read only mode. This command can get long, so there is a convenience bash script that can be used to run the main Schoolmint job that mounts the files. There are variables and paths that may need to be adjusted to fit your needs.
+
+**Note:** *This convenience file only works for running the main job or running the main job with the `--dbt-refresh` flag. All other commands can be run locally in a Docker container since they do not work with teh SFTP server.*
+
+#### Places to Update in File
+At the top of the file are constants for the root of the path to the ssh key, know_hosts, and the name of the Docker container:
+
+```shell
+KEY_DIR="/home/data_admin/keys"
+...
+IMAGE="schoolmint"
+```
+
+At the end of the file is the actual command that uses the `KEY_DIR` and `IMAGE` constants. These paths might also need to be tweaked depending on where you stored this info on your system:
+
+```shell
+/usr/bin/docker run --rm \
+    -v "$KEY_DIR/schoolmint_pipeline:/root/.ssh/schoolmint_pipeline:ro" \
+    -v "$KEY_DIR/known_hosts:/root/.ssh/known_hosts:ro" \
+    "$IMAGE" --school-year "$SCHOOL_YEAR" "${EXTRA_ARGS[@]}"
+```
+
+Then change permissions for the file:
+
+```shell
+chmod +x run_schoolmint.sh
+```
+
+To run the job using the bash file, execute this command in the same dir as the file:
+
+```shell
+run_schoolmint.sh 2028
+```
+
+With `--dbt-refresh` flag:
+
+```shell
+run_schoolmint.sh 2028 --dbt-refresh
+```
+
 
 ### Running the Job
 
@@ -100,17 +134,17 @@ Here are the runtime arguments for the job:
 
 Run the job:
 ```
-docker run --rm -t schoolmint --scool-year 2027
+docker run --rm -t schoolmint --scool-year 2028
 ```
 
 Update the columns of historical files:
 ```
-docker run --rm -t schoolmint -a --scool-year 2027
+docker run --rm -t schoolmint -a --scool-year 2028
 ```
 
 Generate a JSON file for a new schema (using the -v volume flag):
 ```
-docker run --rm -t -v ~/Desktop:/code/files schoolmint -g --school-year 2027
+docker run --rm -t -v ~/Desktop:/code/files schoolmint -g --school-year 2028
 ```
 
 #### Maintenance

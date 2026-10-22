@@ -1,5 +1,5 @@
-import base64
 import datetime as dt
+import logging
 import os
 import posixpath
 import stat
@@ -7,6 +7,7 @@ import time
 
 import paramiko
 
+logger = logging.getLogger(__name__)
 
 class FTP:
     """Class for the local FTP connection."""
@@ -85,9 +86,12 @@ class FTP:
         :type remotedir: String
         """
         for attr in self._list_files(remotedir):
+            source_file_path = posixpath.join(remotedir, attr.filename)
+            dest_file_path = posixpath.join("archive", attr.filename)
+            logger.info(f"Moving {source_file_path} to {dest_file_path}")
             self.ftpsrv.rename(
-                posixpath.join(remotedir, attr.filename),
-                posixpath.join("archive", attr.filename),
+                source_file_path,
+                dest_file_path,
             )
 
     def delete_old_archive_files(self, remotedir):

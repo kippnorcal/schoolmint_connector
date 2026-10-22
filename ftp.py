@@ -69,7 +69,7 @@ class FTP:
         :type localdir: String
         """
         # 2 is the number of files plus the archive directory
-        if len(self.ftpsrv.listdir(remotedir)) >= 2:
+        if len(self.ftpsrv.listdir(remotedir)) >= 1:
             time.sleep(30)  # wait to allow the files to finish uploading
             for attr in self._list_files(remotedir):
                 local_file = os.path.join(localdir, attr.filename)

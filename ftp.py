@@ -87,7 +87,7 @@ class FTP:
         for attr in self._list_files(remotedir):
             self.ftpsrv.rename(
                 posixpath.join(remotedir, attr.filename),
-                posixpath.join(remotedir, "archive", attr.filename),
+                posixpath.join("archive", attr.filename),
             )
 
     def delete_old_archive_files(self, remotedir):

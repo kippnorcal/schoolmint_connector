@@ -87,8 +87,8 @@ class FTP:
         """
         for attr in self._list_files(remotedir):
             source_file_path = posixpath.join(remotedir, attr.filename)
-            dest_file_path = posixpath.join("archive", attr.filename)
-            logger.info(f"Moving {source_file_path} to {dest_file_path}")
+            dest_file_path = posixpath.join("/archive", attr.filename)
+            logger.info(f"Archive: Moving {source_file_path} to {dest_file_path}")
             self.ftpsrv.rename(
                 source_file_path,
                 dest_file_path,

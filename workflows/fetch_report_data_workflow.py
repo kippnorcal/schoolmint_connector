@@ -11,7 +11,8 @@ from utils.data_config import BASE_FILE_NAME
 from utils.data_config import COLUMN_RENAME_MAP
 from utils.data_config import CURRENT_YEAR_FOLDER
 from utils.data_config import LOCALDIR
-from utils.data_config import SFTP_SOURCEDIR
+from utils.data_config import SFTP_ARCHIVE_DIR
+from utils.data_config import SFTP_SOURCE_DIR
 from utils.data_config import SM_REPORT_NAME
 from utils import helpers
 
@@ -75,7 +76,7 @@ def download_from_ftp(ftp: FTP) -> list:
     to wait up to 30 min.
     """
     logging.info("Attempting to download files")
-    ftp.download_dir(SFTP_SOURCEDIR, LOCALDIR)
+    ftp.download_dir(SFTP_SOURCE_DIR, LOCALDIR)
     regional_file = get_latest_file(SM_REPORT_NAME)
     return [regional_file]
 
@@ -123,18 +124,21 @@ def check_for_deleted_columns(df: pd.DataFrame) -> bool:
 def fetch_report(school_year: str, cloud_client: CloudStorageClient):
 
     ftp = FTP()
+    try:
+        ftp.archive_remote_files(SFTP_SOURCE_DIR)
+        ftp.delete_old_archive_files(SFTP_ARCHIVE_DIR)
 
-    ftp.archive_remote_files(SFTP_SOURCEDIR)
-    ftp.delete_old_archive_files(SFTP_SOURCEDIR)
+        api_suffixes = os.getenv("API_SUFFIXES").split(",")
+        logging.info("Getting API data")
+        SchoolmintAPI(api_suffixes).request_reports()
+        if int(os.getenv("DELETE_LOCAL_FILES")):
+            delete_data_files(LOCALDIR)
 
-    api_suffixes = os.getenv("API_SUFFIXES").split(",")
-    logging.info("Getting API data")
-    SchoolmintAPI(api_suffixes).request_reports()
-    if int(os.getenv("DELETE_LOCAL_FILES")):
-        delete_data_files(LOCALDIR)
+        logging.info("Downloading Files")
+        files = download_from_ftp(ftp)
+    finally:
+        ftp.close()
 
-    logging.info("Downloading Files")
-    files = download_from_ftp(ftp)
     joined_files = prep_files_for_upload(files)
     joined_files["school_year_4_digit"] = school_year
     check_for_deleted_columns(joined_files)

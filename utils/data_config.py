@@ -1,7 +1,8 @@
 
 # Folders for SFTP Transfer
 LOCALDIR = "files"
-SFTP_SOURCEDIR = "schoolmint"
+SFTP_SOURCE_DIR = "/upload"
+SFTP_ARCHIVE_DIR = "/archive"
 SM_REPORT_NAME = "Regional Automated Application Data SFTP"
 
 # Paths in Google Cloud Storage
@@ -134,8 +135,14 @@ COLUMN_RENAME_MAP = {
     'is_there_an_order_regarding_educational_custody_or_other_court_order': 'is_there_an_order_regarding_custody_or_other_issues',
     'If_yes_explain_you_will_be_asked_to_submit_a_legal_docs': 'custody_order_or_other_issues_explanation',
     'does_student_currently_have_medical_insurance': 'does_student_currently_have_medical_insurance',
-    'What is the most recent date the student attended school...': 'most_recent_date_student_attended_school_outside_us',
+    'most_recent_date_student_attended_school_outside_us': 'most_recent_date_student_attended_school_outside_us',
     'is_student_hispanic_or_latinx': 'is_student_hispanic_or_latinx',
     'does_the_student_identify_as_only_hispanic_latinx': 'does_the_student_identify_as_only_hispanic_latinx',
     'what_is_student_race': 'what_is_student_race',
+    'interested_guardian_email_address': 'interested_guardian_email_address',
+    'interested_guardian_guardian_phone_number': 'interested_guardian_guardian_phone_number',
+    'interested_guardian_full_name': 'interested_guardian_full_name',
+    'interested_student_name_and_grade': 'interested_student_name_and_grade',
+    'do_you_know_anyone_interested_in_kipp': 'do_you_know_anyone_interested_in_kipp',
+    'how_did_you_hear_about_kipp': 'how_did_you_hear_about_kipp'
 }
